@@ -1,0 +1,3364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Vocabulary Memory App - Learn and memorize vocabulary through interactive flashcards, quizzes, and spaced repetition">
+  <title>Vocabulary Memory App</title>
+  
+  <!-- Font Awesome CDN for icons - 使用国内CDN -->
+  <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- SheetJS library for Excel file parsing - 使用国内CDN -->
+  <script src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  
+  <style>
+    /* ==================== CSS Variables ==================== */
+    :root {
+      /* Colors */
+      --primary-color: #4f46e5;
+      --primary-hover: #4338ca;
+      --secondary-color: #10b981;
+      --danger-color: #ef4444;
+      --warning-color: #f59e0b;
+      --info-color: #3b82f6;
+      
+      --text-primary: #1f2937;
+      --text-secondary: #6b7280;
+      --text-light: #9ca3af;
+      
+      --bg-primary: #ffffff;
+      --bg-secondary: #f9fafb;
+      --bg-tertiary: #f3f4f6;
+      
+      --border-color: #e5e7eb;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      
+      /* Spacing */
+      --spacing-xs: 0.25rem;
+      --spacing-sm: 0.5rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+      --spacing-2xl: 3rem;
+      
+      /* Typography */
+      --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      --font-size-xs: 0.75rem;
+      --font-size-sm: 0.875rem;
+      --font-size-base: 1rem;
+      --font-size-lg: 1.125rem;
+      --font-size-xl: 1.25rem;
+      --font-size-2xl: 1.5rem;
+      --font-size-3xl: 1.875rem;
+      --font-size-4xl: 2.25rem;
+      
+      --font-weight-normal: 400;
+      --font-weight-medium: 500;
+      --font-weight-semibold: 600;
+      --font-weight-bold: 700;
+      
+      /* Border Radius */
+      --radius-sm: 0.25rem;
+      --radius-md: 0.5rem;
+      --radius-lg: 0.75rem;
+      --radius-xl: 1rem;
+      --radius-full: 9999px;
+      
+      /* Transitions */
+      --transition-fast: 150ms ease-in-out;
+      --transition-base: 200ms ease-in-out;
+      --transition-slow: 300ms ease-in-out;
+      
+      /* Layout */
+      --header-height: 4rem;
+      --max-width: 1200px;
+    }
+    
+    /* Dark theme variables */
+    [data-theme="dark"] {
+      --text-primary: #f9fafb;
+      --text-secondary: #d1d5db;
+      --text-light: #9ca3af;
+      
+      --bg-primary: #111827;
+      --bg-secondary: #1f2937;
+      --bg-tertiary: #374151;
+      
+      --border-color: #374151;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    }
+    
+    /* ==================== Reset & Base Styles ==================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+    }
+    
+    body {
+      font-family: var(--font-family);
+      font-size: var(--font-size-base);
+      line-height: 1.6;
+      color: var(--text-primary);
+      background-color: var(--bg-secondary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* ==================== Layout Structure ==================== */
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    
+    /* Header */
+    .app-header {
+      background-color: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: var(--header-height);
+    }
+    
+    .header-container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 var(--spacing-lg);
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .app-logo {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+    
+    .app-logo i {
+      font-size: var(--font-size-2xl);
+    }
+    
+    .app-nav {
+      display: flex;
+      gap: var(--spacing-md);
+      align-items: center;
+    }
+    
+    .nav-link {
+      padding: var(--spacing-sm) var(--spacing-md);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: var(--font-weight-medium);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-base);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+    }
+    
+    .nav-link:hover {
+      color: var(--primary-color);
+      background-color: var(--bg-tertiary);
+    }
+    
+    .nav-link.active {
+      color: var(--primary-color);
+      background-color: var(--bg-tertiary);
+    }
+    
+    /* Mobile menu toggle */
+    .mobile-menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: var(--font-size-2xl);
+      color: var(--text-primary);
+      cursor: pointer;
+      padding: var(--spacing-sm);
+      border-radius: var(--radius-md);
+      transition: background-color var(--transition-base);
+    }
+    
+    .mobile-menu-toggle:hover {
+      background-color: var(--bg-tertiary);
+    }
+    
+    /* ==================== Toast Notifications ==================== */
+    .toast-container {
+      position: fixed;
+      top: calc(var(--header-height) + var(--spacing-md));
+      right: var(--spacing-md);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      max-width: 400px;
+    }
+    
+    .toast {
+      background-color: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-md);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      animation: slideIn 0.3s ease-out;
+      border-left: 4px solid var(--primary-color);
+    }
+    
+    .toast.success {
+      border-left-color: var(--secondary-color);
+    }
+    
+    .toast.error {
+      border-left-color: var(--danger-color);
+    }
+    
+    .toast.warning {
+      border-left-color: var(--warning-color);
+    }
+    
+    .toast.info {
+      border-left-color: var(--info-color);
+    }
+    
+    .toast-icon {
+      font-size: var(--font-size-xl);
+      flex-shrink: 0;
+    }
+    
+    .toast.success .toast-icon {
+      color: var(--secondary-color);
+    }
+    
+    .toast.error .toast-icon {
+      color: var(--danger-color);
+    }
+    
+    .toast.warning .toast-icon {
+      color: var(--warning-color);
+    }
+    
+    .toast.info .toast-icon {
+      color: var(--info-color);
+    }
+    
+    .toast-content {
+      flex: 1;
+    }
+    
+    .toast-title {
+      font-weight: var(--font-weight-semibold);
+      margin-bottom: var(--spacing-xs);
+    }
+    
+    .toast-message {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+    
+    .toast-close {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: var(--spacing-xs);
+      font-size: var(--font-size-lg);
+      transition: color var(--transition-fast);
+    }
+    
+    .toast-close:hover {
+      color: var(--text-primary);
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    /* ==================== Modal Dialog ==================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      animation: fadeIn 0.2s ease-out;
+    }
+    
+    .modal {
+      background-color: var(--bg-primary);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow: hidden;
+      animation: scaleIn 0.3s ease-out;
+    }
+    
+    .modal-header {
+      padding: var(--spacing-lg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .modal-title {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--text-primary);
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: var(--font-size-2xl);
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: var(--spacing-xs);
+      transition: color var(--transition-fast);
+    }
+    
+    .modal-close:hover {
+      color: var(--text-primary);
+    }
+    
+    .modal-body {
+      padding: var(--spacing-lg);
+      overflow-y: auto;
+      max-height: calc(80vh - 140px);
+    }
+    
+    .modal-footer {
+      padding: var(--spacing-lg);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: var(--spacing-md);
+      justify-content: flex-end;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes scaleIn {
+      from {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    
+    /* ==================== Loading Spinner ==================== */
+    .loading-spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--border-color);
+      border-top-color: var(--primary-color);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1001;
+      gap: var(--spacing-md);
+    }
+    
+    [data-theme="dark"] .loading-overlay {
+      background-color: rgba(17, 24, 39, 0.9);
+    }
+    
+    .loading-text {
+      font-size: var(--font-size-lg);
+      color: var(--text-secondary);
+    }
+    
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+    
+    /* ==================== Buttons ==================== */
+    .btn {
+      padding: var(--spacing-sm) var(--spacing-lg);
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-medium);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      text-decoration: none;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    .btn-secondary {
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+    
+    .btn-secondary:hover {
+      background-color: var(--border-color);
+    }
+    
+    .btn-success {
+      background-color: var(--secondary-color);
+      color: white;
+    }
+    
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    /* ==================== Home View ==================== */
+    .home-view {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    .welcome-section {
+      text-align: center;
+      padding: var(--spacing-2xl) 0;
+    }
+    
+    .welcome-title {
+      font-size: var(--font-size-4xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .welcome-subtitle {
+      font-size: var(--font-size-lg);
+      color: var(--text-secondary);
+      margin-bottom: var(--spacing-xl);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-2xl);
+    }
+    
+    .stat-card {
+      background-color: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      box-shadow: var(--shadow-md);
+      text-align: center;
+    }
+    
+    .stat-icon {
+      font-size: var(--font-size-3xl);
+      color: var(--primary-color);
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    .stat-value {
+      font-size: var(--font-size-3xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-xs);
+    }
+    
+    .stat-label {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+    
+    .actions-section {
+      background-color: var(--bg-primary);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-xl);
+      box-shadow: var(--shadow-md);
+      margin-bottom: var(--spacing-xl);
+    }
+    
+    .section-title {
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-lg);
+    }
+    
+    .action-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--spacing-md);
+    }
+    
+    .action-card {
+      background-color: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition-base);
+      border: 2px solid transparent;
+    }
+    
+    .action-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--primary-color);
+    }
+    
+    .action-icon {
+      font-size: var(--font-size-4xl);
+      color: var(--primary-color);
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .action-title {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-semibold);
+      color: var(--text-primary);
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    .action-description {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+    
+    .file-input {
+      display: none;
+    }
+    
+    /* Main Content */
+    .app-main {
+      flex: 1;
+      max-width: var(--max-width);
+      width: 100%;
+      margin: 0 auto;
+      padding: var(--spacing-xl) var(--spacing-lg);
+    }
+    
+    /* Footer */
+    .app-footer {
+      background-color: var(--bg-primary);
+      border-top: 1px solid var(--border-color);
+      padding: var(--spacing-lg);
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: var(--font-size-sm);
+    }
+    
+    /* ==================== Responsive Design ==================== */
+    @media (max-width: 768px) {
+      .header-container {
+        padding: 0 var(--spacing-md);
+      }
+      
+      .app-main {
+        padding: var(--spacing-lg) var(--spacing-md);
+      }
+      
+      .mobile-menu-toggle {
+        display: block;
+      }
+      
+      .app-nav {
+        position: fixed;
+        top: var(--header-height);
+        right: -100%;
+        width: 250px;
+        height: calc(100vh - var(--header-height));
+        background-color: var(--bg-primary);
+        flex-direction: column;
+        padding: var(--spacing-lg);
+        box-shadow: var(--shadow-lg);
+        transition: right var(--transition-slow);
+        z-index: 99;
+      }
+      
+      .app-nav.mobile-open {
+        right: 0;
+      }
+      
+      .nav-link {
+        width: 100%;
+        padding: var(--spacing-md);
+        font-size: var(--font-size-base);
+        justify-content: flex-start;
+      }
+      
+      .nav-link span {
+        display: inline;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-container">
+        <a href="#" class="app-logo">
+          <i class="fas fa-book-open"></i>
+          <span>Vocabulary Memory</span>
+        </a>
+        
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        
+        <nav class="app-nav" id="app-nav">
+          <a href="#home" class="nav-link active" data-view="home">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+          </a>
+          <a href="#study" class="nav-link" data-view="study">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Study</span>
+          </a>
+          <a href="#progress" class="nav-link" data-view="progress">
+            <i class="fas fa-chart-line"></i>
+            <span>Progress</span>
+          </a>
+          <a href="#settings" class="nav-link" data-view="settings">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+          </a>
+        </nav>
+      </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="app-main" id="app-main">
+      <!-- Dynamic content will be rendered here -->
+    </main>
+    
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>&copy; 2024 Vocabulary Memory App. Built for effective learning.</p>
+    </footer>
+  </div>
+  
+  <script>
+    // ==================== Data Models & Utilities ====================
+    
+    /**
+     * Utility Functions
+     */
+    const Utils = {
+      /**
+       * Generate a UUID v4
+       * @returns {string} UUID string
+       */
+      generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          const r = Math.random() * 16 | 0;
+          const v = c === 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      },
+      
+      /**
+       * Get current timestamp
+       * @returns {number} Current timestamp in milliseconds
+       */
+      getCurrentTimestamp() {
+        return Date.now();
+      },
+      
+      /**
+       * Validate if a value is a non-empty string
+       * @param {*} value - Value to validate
+       * @returns {boolean} True if valid string
+       */
+      isValidString(value) {
+        return typeof value === 'string' && value.trim().length > 0;
+      },
+      
+      /**
+       * Validate if a value is a valid number
+       * @param {*} value - Value to validate
+       * @returns {boolean} True if valid number
+       */
+      isValidNumber(value) {
+        return typeof value === 'number' && !isNaN(value) && isFinite(value);
+      },
+      
+      /**
+       * Validate if a value is a valid timestamp
+       * @param {*} value - Value to validate
+       * @returns {boolean} True if valid timestamp
+       */
+      isValidTimestamp(value) {
+        return this.isValidNumber(value) && value > 0;
+      }
+    };
+    
+    /**
+     * WordEntry Class
+     * Represents a single vocabulary word with all associated data
+     */
+    class WordEntry {
+      constructor(data = {}) {
+        this.id = data.id || Utils.generateUUID();
+        this.word = data.word || '';
+        this.definition = data.definition || '';
+        this.example = data.example || '';
+        this.notes = data.notes || '';
+        this.dateAdded = data.dateAdded || Utils.getCurrentTimestamp();
+        this.lastReviewed = data.lastReviewed || null;
+        this.nextReview = data.nextReview || null;
+        this.reviewCount = data.reviewCount || 0;
+        this.correctCount = data.correctCount || 0;
+        this.incorrectCount = data.incorrectCount || 0;
+        this.masteryLevel = data.masteryLevel || 0;
+        this.difficulty = data.difficulty || 3; // Default difficulty: 3 (medium)
+      }
+      
+      /**
+       * Validate the word entry data
+       * @returns {Object} Validation result with isValid flag and errors array
+       */
+      validate() {
+        const errors = [];
+        
+        // Required fields validation
+        if (!Utils.isValidString(this.word)) {
+          errors.push('Word is required and must be a non-empty string');
+        }
+        
+        if (!Utils.isValidString(this.definition)) {
+          errors.push('Definition is required and must be a non-empty string');
+        }
+        
+        // Optional string fields validation
+        if (this.example !== '' && !Utils.isValidString(this.example)) {
+          errors.push('Example must be a valid string if provided');
+        }
+        
+        if (this.notes !== '' && !Utils.isValidString(this.notes)) {
+          errors.push('Notes must be a valid string if provided');
+        }
+        
+        // Timestamp validation
+        if (!Utils.isValidTimestamp(this.dateAdded)) {
+          errors.push('Date added must be a valid timestamp');
+        }
+        
+        if (this.lastReviewed !== null && !Utils.isValidTimestamp(this.lastReviewed)) {
+          errors.push('Last reviewed must be a valid timestamp or null');
+        }
+        
+        if (this.nextReview !== null && !Utils.isValidTimestamp(this.nextReview)) {
+          errors.push('Next review must be a valid timestamp or null');
+        }
+        
+        // Number validation
+        if (!Utils.isValidNumber(this.reviewCount) || this.reviewCount < 0) {
+          errors.push('Review count must be a non-negative number');
+        }
+        
+        if (!Utils.isValidNumber(this.correctCount) || this.correctCount < 0) {
+          errors.push('Correct count must be a non-negative number');
+        }
+        
+        if (!Utils.isValidNumber(this.incorrectCount) || this.incorrectCount < 0) {
+          errors.push('Incorrect count must be a non-negative number');
+        }
+        
+        if (!Utils.isValidNumber(this.masteryLevel) || this.masteryLevel < 0 || this.masteryLevel > 100) {
+          errors.push('Mastery level must be a number between 0 and 100');
+        }
+        
+        if (!Utils.isValidNumber(this.difficulty) || this.difficulty < 1 || this.difficulty > 5) {
+          errors.push('Difficulty must be a number between 1 and 5');
+        }
+        
+        return {
+          isValid: errors.length === 0,
+          errors: errors
+        };
+      }
+      
+      /**
+       * Convert WordEntry to plain object for storage
+       * @returns {Object} Plain object representation
+       */
+      toJSON() {
+        return {
+          id: this.id,
+          word: this.word,
+          definition: this.definition,
+          example: this.example,
+          notes: this.notes,
+          dateAdded: this.dateAdded,
+          lastReviewed: this.lastReviewed,
+          nextReview: this.nextReview,
+          reviewCount: this.reviewCount,
+          correctCount: this.correctCount,
+          incorrectCount: this.incorrectCount,
+          masteryLevel: this.masteryLevel,
+          difficulty: this.difficulty
+        };
+      }
+      
+      /**
+       * Create WordEntry from plain object
+       * @param {Object} obj - Plain object with word data
+       * @returns {WordEntry} New WordEntry instance
+       */
+      static fromJSON(obj) {
+        return new WordEntry(obj);
+      }
+    }
+    
+    /**
+     * DataManager Module
+     * Handles all data persistence operations using LocalStorage
+     */
+    const DataManager = {
+      // Storage keys
+      STORAGE_KEYS: {
+        WORDS: 'vocab_words',
+        SETTINGS: 'vocab_settings',
+        PROGRESS: 'vocab_progress'
+      },
+      
+      // Current data version for future compatibility
+      DATA_VERSION: '1.0',
+      
+      /**
+       * Save data to LocalStorage
+       * @param {string} key - Storage key
+       * @param {*} data - Data to save
+       * @returns {Object} Result with success flag and optional error
+       */
+      save(key, data) {
+        try {
+          const jsonString = JSON.stringify(data);
+          localStorage.setItem(key, jsonString);
+          return { success: true };
+        } catch (error) {
+          if (error.name === 'QuotaExceededError') {
+            return {
+              success: false,
+              error: 'Storage quota exceeded. Please export your data and clear some space.'
+            };
+          }
+          return {
+            success: false,
+            error: `Failed to save data: ${error.message}`
+          };
+        }
+      },
+      
+      /**
+       * Load data from LocalStorage
+       * @param {string} key - Storage key
+       * @param {*} defaultValue - Default value if key doesn't exist
+       * @returns {*} Loaded data or default value
+       */
+      load(key, defaultValue = null) {
+        try {
+          const jsonString = localStorage.getItem(key);
+          if (jsonString === null) {
+            return defaultValue;
+          }
+          return JSON.parse(jsonString);
+        } catch (error) {
+          console.error(`Failed to load data from ${key}:`, error);
+          return defaultValue;
+        }
+      },
+      
+      /**
+       * Clear data from LocalStorage
+       * @param {string} key - Storage key
+       * @returns {Object} Result with success flag
+       */
+      clear(key) {
+        try {
+          localStorage.removeItem(key);
+          return { success: true };
+        } catch (error) {
+          return {
+            success: false,
+            error: `Failed to clear data: ${error.message}`
+          };
+        }
+      },
+      
+      /**
+       * Clear all app data from LocalStorage
+       * @returns {Object} Result with success flag
+       */
+      clearAll() {
+        try {
+          Object.values(this.STORAGE_KEYS).forEach(key => {
+            localStorage.removeItem(key);
+          });
+          return { success: true };
+        } catch (error) {
+          return {
+            success: false,
+            error: `Failed to clear all data: ${error.message}`
+          };
+        }
+      },
+      
+      /**
+       * Get all word entries
+       * @returns {WordEntry[]} Array of word entries
+       */
+      getWords() {
+        const data = this.load(this.STORAGE_KEYS.WORDS, { words: [], version: this.DATA_VERSION });
+        return data.words.map(wordData => WordEntry.fromJSON(wordData));
+      },
+      
+      /**
+       * Save all word entries
+       * @param {WordEntry[]} words - Array of word entries
+       * @returns {Object} Result with success flag and optional error
+       */
+      saveWords(words) {
+        const data = {
+          words: words.map(word => word.toJSON()),
+          version: this.DATA_VERSION
+        };
+        return this.save(this.STORAGE_KEYS.WORDS, data);
+      },
+      
+      /**
+       * Get a word entry by ID
+       * @param {string} id - Word entry ID
+       * @returns {WordEntry|null} Word entry or null if not found
+       */
+      getWordById(id) {
+        const words = this.getWords();
+        return words.find(word => word.id === id) || null;
+      },
+      
+      /**
+       * Create a new word entry
+       * @param {Object} wordData - Word data
+       * @returns {Object} Result with success flag, word, and optional error
+       */
+      createWord(wordData) {
+        try {
+          const word = new WordEntry(wordData);
+          const validation = word.validate();
+          
+          if (!validation.isValid) {
+            return {
+              success: false,
+              error: `Validation failed: ${validation.errors.join(', ')}`
+            };
+          }
+          
+          const words = this.getWords();
+          words.push(word);
+          
+          const saveResult = this.saveWords(words);
+          if (!saveResult.success) {
+            return saveResult;
+          }
+          
+          return {
+            success: true,
+            word: word
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: `Failed to create word: ${error.message}`
+          };
+        }
+      },
+      
+      /**
+       * Update an existing word entry
+       * @param {string} id - Word entry ID
+       * @param {Object} updates - Fields to update
+       * @returns {Object} Result with success flag, word, and optional error
+       */
+      updateWord(id, updates) {
+        try {
+          const words = this.getWords();
+          const index = words.findIndex(word => word.id === id);
+          
+          if (index === -1) {
+            return {
+              success: false,
+              error: 'Word not found'
+            };
+          }
+          
+          // Apply updates
+          const updatedWord = new WordEntry({
+            ...words[index].toJSON(),
+            ...updates,
+            id: id // Ensure ID cannot be changed
+          });
+          
+          const validation = updatedWord.validate();
+          if (!validation.isValid) {
+            return {
+              success: false,
+              error: `Validation failed: ${validation.errors.join(', ')}`
+            };
+          }
+          
+          words[index] = updatedWord;
+          
+          const saveResult = this.saveWords(words);
+          if (!saveResult.success) {
+            return saveResult;
+          }
+          
+          return {
+            success: true,
+            word: updatedWord
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: `Failed to update word: ${error.message}`
+          };
+        }
+      },
+      
+      /**
+       * Delete a word entry
+       * @param {string} id - Word entry ID
+       * @returns {Object} Result with success flag and optional error
+       */
+      deleteWord(id) {
+        try {
+          const words = this.getWords();
+          const filteredWords = words.filter(word => word.id !== id);
+          
+          if (filteredWords.length === words.length) {
+            return {
+              success: false,
+              error: 'Word not found'
+            };
+          }
+          
+          return this.saveWords(filteredWords);
+        } catch (error) {
+          return {
+            success: false,
+            error: `Failed to delete word: ${error.message}`
+          };
+        }
+      },
+      
+      /**
+       * Get storage usage information
+       * @returns {Object} Storage usage stats
+       */
+      getStorageInfo() {
+        try {
+          let totalSize = 0;
+          for (let key in localStorage) {
+            if (localStorage.hasOwnProperty(key)) {
+              totalSize += localStorage[key].length + key.length;
+            }
+          }
+          
+          // Approximate storage limit (5MB for most browsers)
+          const storageLimit = 5 * 1024 * 1024;
+          const usagePercent = (totalSize / storageLimit * 100).toFixed(2);
+          
+          return {
+            totalSize: totalSize,
+            totalSizeKB: (totalSize / 1024).toFixed(2),
+            storageLimit: storageLimit,
+            storageLimitMB: (storageLimit / 1024 / 1024).toFixed(2),
+            usagePercent: usagePercent
+          };
+        } catch (error) {
+          return {
+            error: `Failed to get storage info: ${error.message}`
+          };
+        }
+      },
+      
+      /**
+       * Import words from Excel file
+       * @param {File} file - Excel file to import
+       * @param {Function} progressCallback - Optional callback for progress updates
+       * @returns {Promise<Object>} Result with success flag, imported words count, and optional error
+       */
+      async importExcel(file, progressCallback = null) {
+        return new Promise((resolve, reject) => {
+          try {
+            // Validate file type
+            const validExtensions = ['.xlsx', '.xls', '.csv'];
+            const fileName = file.name.toLowerCase();
+            const isValidType = validExtensions.some(ext => fileName.endsWith(ext));
+            
+            if (!isValidType) {
+              resolve({
+                success: false,
+                error: 'Invalid file format. Please upload an Excel file (.xlsx, .xls) or CSV file.'
+              });
+              return;
+            }
+            
+            // Validate file size (max 10MB)
+            const maxSize = 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+              resolve({
+                success: false,
+                error: 'File size exceeds 10MB limit. Please upload a smaller file.'
+              });
+              return;
+            }
+            
+            if (progressCallback) {
+              progressCallback({ stage: 'reading', percent: 10 });
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+              try {
+                if (progressCallback) {
+                  progressCallback({ stage: 'parsing', percent: 30 });
+                }
+                
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                
+                // Get the first sheet
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // Convert to JSON
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                
+                if (jsonData.length === 0) {
+                  resolve({
+                    success: false,
+                    error: 'Excel file is empty. Please upload a file with vocabulary data.'
+                  });
+                  return;
+                }
+                
+                if (progressCallback) {
+                  progressCallback({ stage: 'processing', percent: 50 });
+                }
+                
+                // Parse the data
+                const parseResult = this.parseExcelData(jsonData);
+                
+                if (!parseResult.success) {
+                  resolve(parseResult);
+                  return;
+                }
+                
+                if (progressCallback) {
+                  progressCallback({ stage: 'saving', percent: 80 });
+                }
+                
+                // Get existing words
+                const existingWords = this.getWords();
+                const existingWordsMap = new Map(existingWords.map(w => [w.word.toLowerCase(), w]));
+                
+                // Filter out duplicates and create new words
+                const newWords = [];
+                const skippedDuplicates = [];
+                
+                parseResult.words.forEach(wordData => {
+                  const wordLower = wordData.word.toLowerCase();
+                  if (existingWordsMap.has(wordLower)) {
+                    skippedDuplicates.push(wordData.word);
+                  } else {
+                    const word = new WordEntry(wordData);
+                    const validation = word.validate();
+                    if (validation.isValid) {
+                      newWords.push(word);
+                      existingWordsMap.set(wordLower, word);
+                    }
+                  }
+                });
+                
+                // Save all words
+                const allWords = [...existingWords, ...newWords];
+                const saveResult = this.saveWords(allWords);
+                
+                if (!saveResult.success) {
+                  resolve(saveResult);
+                  return;
+                }
+                
+                if (progressCallback) {
+                  progressCallback({ stage: 'complete', percent: 100 });
+                }
+                
+                resolve({
+                  success: true,
+                  importedCount: newWords.length,
+                  skippedCount: skippedDuplicates.length,
+                  totalCount: allWords.length,
+                  skippedWords: skippedDuplicates
+                });
+                
+              } catch (error) {
+                resolve({
+                  success: false,
+                  error: `Failed to parse Excel file: ${error.message}`
+                });
+              }
+            };
+            
+            reader.onerror = () => {
+              resolve({
+                success: false,
+                error: 'Failed to read file. Please try again.'
+              });
+            };
+            
+            reader.readAsArrayBuffer(file);
+            
+          } catch (error) {
+            resolve({
+              success: false,
+              error: `Failed to import Excel file: ${error.message}`
+            });
+          }
+        });
+      },
+      
+      /**
+       * Parse Excel data array into word entries
+       * @param {Array} data - 2D array from Excel sheet
+       * @returns {Object} Result with success flag, words array, and optional error
+       */
+      parseExcelData(data) {
+        try {
+          if (data.length < 2) {
+            return {
+              success: false,
+              error: 'Excel file must contain at least a header row and one data row.'
+            };
+          }
+          
+          // Get header row (first row)
+          const headers = data[0].map(h => String(h).toLowerCase().trim());
+          
+          // Find column indices
+          const columnMap = {
+            word: this.findColumnIndex(headers, ['word', 'vocabulary', 'term']),
+            definition: this.findColumnIndex(headers, ['definition', 'meaning', 'def']),
+            example: this.findColumnIndex(headers, ['example', 'sentence', 'usage']),
+            notes: this.findColumnIndex(headers, ['notes', 'note', 'remarks', 'comment'])
+          };
+          
+          // Validate required columns
+          if (columnMap.word === -1) {
+            return {
+              success: false,
+              error: 'Excel file must contain a "word" column.'
+            };
+          }
+          
+          if (columnMap.definition === -1) {
+            return {
+              success: false,
+              error: 'Excel file must contain a "definition" column.'
+            };
+          }
+          
+          // Parse data rows
+          const words = [];
+          for (let i = 1; i < data.length; i++) {
+            const row = data[i];
+            
+            // Skip empty rows
+            if (!row || row.length === 0 || !row[columnMap.word]) {
+              continue;
+            }
+            
+            const wordData = {
+              word: String(row[columnMap.word] || '').trim(),
+              definition: String(row[columnMap.definition] || '').trim(),
+              example: columnMap.example !== -1 ? String(row[columnMap.example] || '').trim() : '',
+              notes: columnMap.notes !== -1 ? String(row[columnMap.notes] || '').trim() : ''
+            };
+            
+            // Skip if word or definition is empty
+            if (wordData.word && wordData.definition) {
+              words.push(wordData);
+            }
+          }
+          
+          if (words.length === 0) {
+            return {
+              success: false,
+              error: 'No valid word entries found in Excel file. Please ensure the file contains word and definition columns with data.'
+            };
+          }
+          
+          return {
+            success: true,
+            words: words
+          };
+          
+        } catch (error) {
+          return {
+            success: false,
+            error: `Failed to parse Excel data: ${error.message}`
+          };
+        }
+      },
+      
+      /**
+       * Find column index by matching possible header names
+       * @param {Array} headers - Array of header names
+       * @param {Array} possibleNames - Array of possible column names to match
+       * @returns {number} Column index or -1 if not found
+       */
+      findColumnIndex(headers, possibleNames) {
+        for (let i = 0; i < headers.length; i++) {
+          if (possibleNames.includes(headers[i])) {
+            return i;
+          }
+        }
+        return -1;
+      }
+    };
+    
+    /**
+     * ExcelImporter Module
+     * Handles Excel file import and parsing
+     */
+    const ExcelImporter = {
+      /**
+       * Supported file extensions
+       */
+      SUPPORTED_EXTENSIONS: ['.xlsx', '.xls'],
+      
+      /**
+       * Validate file type
+       * @param {File} file - File object
+       * @returns {Object} Validation result
+       */
+      validateFile(file) {
+        if (!file) {
+          return { isValid: false, error: 'No file provided' };
+        }
+        
+        const fileName = file.name.toLowerCase();
+        const isSupported = this.SUPPORTED_EXTENSIONS.some(ext => fileName.endsWith(ext));
+        
+        if (!isSupported) {
+          return {
+            isValid: false,
+            error: `Unsupported file type. Please upload ${this.SUPPORTED_EXTENSIONS.join(' or ')} files.`
+          };
+        }
+        
+        return { isValid: true };
+      },
+      
+      /**
+       * Parse Excel file and extract word data
+       * @param {File} file - Excel file
+       * @param {Function} onProgress - Progress callback
+       * @returns {Promise<Object>} Result with words array or error
+       */
+      async parseExcelFile(file, onProgress = null) {
+        return new Promise((resolve, reject) => {
+          const validation = this.validateFile(file);
+          if (!validation.isValid) {
+            reject(new Error(validation.error));
+            return;
+          }
+          
+          const reader = new FileReader();
+          
+          reader.onload = (e) => {
+            try {
+              if (onProgress) onProgress(50, 'Reading file...');
+              
+              const data = new Uint8Array(e.target.result);
+              const workbook = XLSX.read(data, { type: 'array' });
+              
+              if (onProgress) onProgress(70, 'Parsing data...');
+              
+              // Get first sheet
+              const firstSheetName = workbook.SheetNames[0];
+              const worksheet = workbook.Sheets[firstSheetName];
+              
+              // Convert to JSON
+              const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+              
+              if (jsonData.length === 0) {
+                reject(new Error('Excel file is empty'));
+                return;
+              }
+              
+              if (onProgress) onProgress(80, 'Mapping columns...');
+              
+              // Parse words from Excel data
+              const words = this.mapExcelDataToWords(jsonData);
+              
+              if (onProgress) onProgress(100, 'Complete!');
+              
+              resolve({
+                success: true,
+                words: words,
+                totalRows: jsonData.length
+              });
+            } catch (error) {
+              reject(new Error(`Failed to parse Excel file: ${error.message}`));
+            }
+          };
+          
+          reader.onerror = () => {
+            reject(new Error('Failed to read file'));
+          };
+          
+          reader.readAsArrayBuffer(file);
+        });
+      },
+      
+      /**
+       * Map Excel data to WordEntry objects
+       * Expected columns: Word, Definition, Example, Notes
+       * @param {Array} data - Excel data as 2D array
+       * @returns {WordEntry[]} Array of word entries
+       */
+      mapExcelDataToWords(data) {
+        if (data.length < 2) {
+          throw new Error('Excel文件必须包含至少一行标题和一行数据');
+        }
+        
+        // First row is header
+        const headers = data[0].map(h => String(h).toLowerCase().trim());
+        
+        // Find column indices with more flexible matching
+        const wordIndex = this.findColumnIndex(headers, [
+          'word', 'words', '单词', '词汇', '词', 'vocabulary', 'term'
+        ]);
+        const definitionIndex = this.findColumnIndex(headers, [
+          'definition', 'meaning', '定义', '释义', '意思', '解释', 'def', 'translation'
+        ]);
+        const exampleIndex = this.findColumnIndex(headers, [
+          'example', 'sentence', '例句', '示例', '例子', 'usage'
+        ]);
+        const notesIndex = this.findColumnIndex(headers, [
+          'notes', 'note', '备注', '笔记', 'remark', 'comment'
+        ]);
+        
+        // Provide helpful error messages
+        if (wordIndex === -1) {
+          throw new Error(
+            `找不到"单词"列。Excel文件的第一行应包含列名，如：Word、单词、词汇等。\n` +
+            `当前列名：${headers.join(', ')}`
+          );
+        }
+        
+        if (definitionIndex === -1) {
+          throw new Error(
+            `找不到"定义"列。Excel文件的第一行应包含列名，如：Definition、定义、释义等。\n` +
+            `当前列名：${headers.join(', ')}`
+          );
+        }
+        
+        const words = [];
+        
+        // Process data rows (skip header)
+        for (let i = 1; i < data.length; i++) {
+          const row = data[i];
+          
+          // Skip empty rows
+          if (!row || row.length === 0 || !row[wordIndex]) {
+            continue;
+          }
+          
+          const wordData = {
+            word: String(row[wordIndex] || '').trim(),
+            definition: String(row[definitionIndex] || '').trim(),
+            example: exampleIndex !== -1 ? String(row[exampleIndex] || '').trim() : '',
+            notes: notesIndex !== -1 ? String(row[notesIndex] || '').trim() : ''
+          };
+          
+          // Skip if word or definition is empty
+          if (!wordData.word || !wordData.definition) {
+            continue;
+          }
+          
+          try {
+            const word = new WordEntry(wordData);
+            const validation = word.validate();
+            
+            if (validation.isValid) {
+              words.push(word);
+            }
+          } catch (error) {
+            console.warn(`Skipping invalid word at row ${i + 1}:`, error.message);
+          }
+        }
+        
+        return words;
+      },
+      
+      /**
+       * Find column index by matching possible header names
+       * @param {string[]} headers - Array of header names
+       * @param {string[]} possibleNames - Possible column names to match
+       * @returns {number} Column index or -1 if not found
+       */
+      findColumnIndex(headers, possibleNames) {
+        for (let i = 0; i < headers.length; i++) {
+          if (possibleNames.includes(headers[i])) {
+            return i;
+          }
+        }
+        return -1;
+      },
+      
+      /**
+       * Import words from Excel file
+       * @param {File} file - Excel file
+       * @param {Function} onProgress - Progress callback
+       * @returns {Promise<Object>} Import result
+       */
+      async importWords(file, onProgress = null) {
+        try {
+          const parseResult = await this.parseExcelFile(file, onProgress);
+          
+          if (!parseResult.success || parseResult.words.length === 0) {
+            return {
+              success: false,
+              error: 'No valid words found in Excel file'
+            };
+          }
+          
+          // Get existing words
+          const existingWords = DataManager.getWords();
+          const existingWordTexts = new Set(existingWords.map(w => w.word.toLowerCase()));
+          
+          // Filter out duplicates
+          const newWords = parseResult.words.filter(word => 
+            !existingWordTexts.has(word.word.toLowerCase())
+          );
+          
+          const duplicateCount = parseResult.words.length - newWords.length;
+          
+          // Add new words
+          const allWords = [...existingWords, ...newWords];
+          const saveResult = DataManager.saveWords(allWords);
+          
+          if (!saveResult.success) {
+            return saveResult;
+          }
+          
+          return {
+            success: true,
+            imported: newWords.length,
+            duplicates: duplicateCount,
+            total: parseResult.words.length,
+            message: `Successfully imported ${newWords.length} words${duplicateCount > 0 ? ` (${duplicateCount} duplicates skipped)` : ''}`
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error.message
+          };
+        }
+      }
+    };
+    
+    /**
+     * Simple Test Framework
+     * Minimal testing utilities for core functionality
+     */
+    const TestRunner = {
+      tests: [],
+      results: { passed: 0, failed: 0, total: 0 },
+      
+      /**
+       * Add a test
+       */
+      test(name, fn) {
+        this.tests.push({ name, fn });
+      },
+      
+      /**
+       * Run all tests
+       */
+      async runAll() {
+        console.log('🧪 Running tests...\n');
+        this.results = { passed: 0, failed: 0, total: 0 };
+        
+        for (const test of this.tests) {
+          try {
+            await test.fn();
+            this.results.passed++;
+            console.log(`✅ ${test.name}`);
+          } catch (error) {
+            this.results.failed++;
+            console.error(`❌ ${test.name}`);
+            console.error(`   ${error.message}`);
+          }
+          this.results.total++;
+        }
+        
+        console.log(`\n📊 Results: ${this.results.passed}/${this.results.total} passed`);
+        return this.results;
+      },
+      
+      /**
+       * Assert helper
+       */
+      assert(condition, message) {
+        if (!condition) {
+          throw new Error(message || 'Assertion failed');
+        }
+      },
+      
+      /**
+       * Assert equal helper
+       */
+      assertEqual(actual, expected, message) {
+        if (actual !== expected) {
+          throw new Error(message || `Expected ${expected}, got ${actual}`);
+        }
+      }
+    };
+    
+    // ==================== Unit Tests ====================
+    
+    // Test: LocalStorage operations
+    TestRunner.test('DataManager: Save and load data', () => {
+      const testData = { test: 'value', number: 123 };
+      const result = DataManager.save('test_key', testData);
+      TestRunner.assert(result.success, 'Save should succeed');
+      
+      const loaded = DataManager.load('test_key');
+      TestRunner.assertEqual(loaded.test, 'value', 'Loaded data should match');
+      TestRunner.assertEqual(loaded.number, 123, 'Loaded number should match');
+      
+      DataManager.clear('test_key');
+    });
+    
+    // Test: WordEntry validation
+    TestRunner.test('WordEntry: Valid word passes validation', () => {
+      const word = new WordEntry({
+        word: 'test',
+        definition: 'a test word'
+      });
+      
+      const validation = word.validate();
+      TestRunner.assert(validation.isValid, 'Valid word should pass validation');
+      TestRunner.assertEqual(validation.errors.length, 0, 'Should have no errors');
+    });
+    
+    // Test: WordEntry validation fails for invalid data
+    TestRunner.test('WordEntry: Invalid word fails validation', () => {
+      const word = new WordEntry({
+        word: '',
+        definition: 'test'
+      });
+      
+      const validation = word.validate();
+      TestRunner.assert(!validation.isValid, 'Invalid word should fail validation');
+      TestRunner.assert(validation.errors.length > 0, 'Should have errors');
+    });
+    
+    // Test: CRUD operations
+    TestRunner.test('DataManager: Create word', () => {
+      DataManager.clearAll();
+      
+      const result = DataManager.createWord({
+        word: 'hello',
+        definition: 'a greeting'
+      });
+      
+      TestRunner.assert(result.success, 'Create should succeed');
+      TestRunner.assert(result.word, 'Should return word object');
+      TestRunner.assertEqual(result.word.word, 'hello', 'Word should match');
+    });
+    
+    TestRunner.test('DataManager: Read word by ID', () => {
+      const words = DataManager.getWords();
+      TestRunner.assert(words.length > 0, 'Should have at least one word');
+      
+      const firstWord = words[0];
+      const retrieved = DataManager.getWordById(firstWord.id);
+      TestRunner.assert(retrieved !== null, 'Should find word');
+      TestRunner.assertEqual(retrieved.id, firstWord.id, 'IDs should match');
+    });
+    
+    TestRunner.test('DataManager: Update word', () => {
+      const words = DataManager.getWords();
+      const wordId = words[0].id;
+      
+      const result = DataManager.updateWord(wordId, {
+        definition: 'updated definition'
+      });
+      
+      TestRunner.assert(result.success, 'Update should succeed');
+      TestRunner.assertEqual(result.word.definition, 'updated definition', 'Definition should be updated');
+    });
+    
+    TestRunner.test('DataManager: Delete word', () => {
+      const words = DataManager.getWords();
+      const wordId = words[0].id;
+      
+      const result = DataManager.deleteWord(wordId);
+      TestRunner.assert(result.success, 'Delete should succeed');
+      
+      const retrieved = DataManager.getWordById(wordId);
+      TestRunner.assert(retrieved === null, 'Word should be deleted');
+    });
+    
+    // Test: Excel column mapping
+    TestRunner.test('ExcelImporter: Find column index', () => {
+      const headers = ['word', 'definition', 'example'];
+      const index = ExcelImporter.findColumnIndex(headers, ['word', '单词']);
+      TestRunner.assertEqual(index, 0, 'Should find word column');
+      
+      const defIndex = ExcelImporter.findColumnIndex(headers, ['definition', '定义']);
+      TestRunner.assertEqual(defIndex, 1, 'Should find definition column');
+    });
+    
+    TestRunner.test('ExcelImporter: Map Excel data to words', () => {
+      const excelData = [
+        ['Word', 'Definition', 'Example'],
+        ['hello', 'a greeting', 'Hello, world!'],
+        ['goodbye', 'a farewell', 'Goodbye, friend!']
+      ];
+      
+      const words = ExcelImporter.mapExcelDataToWords(excelData);
+      TestRunner.assertEqual(words.length, 2, 'Should create 2 words');
+      TestRunner.assertEqual(words[0].word, 'hello', 'First word should be hello');
+      TestRunner.assertEqual(words[1].word, 'goodbye', 'Second word should be goodbye');
+    });
+    
+    // Test: Spaced Repetition - Initial review
+    TestRunner.test('SpacedRepetition: Calculate first review (GOOD)', () => {
+      const word = new WordEntry({ word: 'test', definition: 'test' });
+      const result = SpacedRepetitionEngine.calculateNextReview(word, 3);
+      
+      TestRunner.assert(result.lastReviewed > 0, 'Should set lastReviewed');
+      TestRunner.assert(result.nextReview > result.lastReviewed, 'Next review should be in future');
+      TestRunner.assertEqual(result.reviewCount, 1, 'Review count should be 1');
+      TestRunner.assertEqual(result.masteryLevel, 10, 'Mastery should be 10 for GOOD');
+    });
+    
+    // Test: Spaced Repetition - AGAIN rating
+    TestRunner.test('SpacedRepetition: AGAIN rating resets interval', () => {
+      const word = new WordEntry({
+        word: 'test',
+        definition: 'test',
+        lastReviewed: Date.now() - 86400000, // 1 day ago
+        reviewCount: 3,
+        masteryLevel: 50
+      });
+      
+      const result = SpacedRepetitionEngine.calculateNextReview(word, 1);
+      
+      TestRunner.assert(result.masteryLevel < 50, 'Mastery should decrease');
+      TestRunner.assert(result.incorrectCount === 1, 'Should increment incorrect count');
+    });
+    
+    // Test: Spaced Repetition - EASY rating
+    TestRunner.test('SpacedRepetition: EASY rating increases interval', () => {
+      const word = new WordEntry({
+        word: 'test',
+        definition: 'test',
+        lastReviewed: Date.now() - 86400000,
+        reviewCount: 2,
+        masteryLevel: 50,
+        difficulty: 3
+      });
+      
+      const result = SpacedRepetitionEngine.calculateNextReview(word, 4);
+      
+      TestRunner.assert(result.masteryLevel > 50, 'Mastery should increase');
+      TestRunner.assert(result.difficulty < 3, 'Difficulty should decrease');
+      TestRunner.assert(result.correctCount === 1, 'Should increment correct count');
+    });
+    
+    // Test: Spaced Repetition - Get due words
+    TestRunner.test('SpacedRepetition: Get due words', () => {
+      const words = [
+        new WordEntry({ word: 'new', definition: 'new word' }),
+        new WordEntry({
+          word: 'due',
+          definition: 'due word',
+          lastReviewed: Date.now() - 86400000,
+          nextReview: Date.now() - 3600000
+        }),
+        new WordEntry({
+          word: 'future',
+          definition: 'future word',
+          lastReviewed: Date.now(),
+          nextReview: Date.now() + 86400000
+        })
+      ];
+      
+      const dueWords = SpacedRepetitionEngine.getDueWords(words);
+      TestRunner.assertEqual(dueWords.length, 2, 'Should return 2 due words (new + overdue)');
+    });
+    
+    // Test: Spaced Repetition - Study queue prioritization
+    TestRunner.test('SpacedRepetition: Prioritize lower mastery words', () => {
+      const words = [
+        new WordEntry({
+          word: 'easy',
+          definition: 'easy',
+          lastReviewed: Date.now() - 86400000,
+          nextReview: Date.now() - 3600000,
+          masteryLevel: 80
+        }),
+        new WordEntry({
+          word: 'hard',
+          definition: 'hard',
+          lastReviewed: Date.now() - 86400000,
+          nextReview: Date.now() - 3600000,
+          masteryLevel: 20
+        })
+      ];
+      
+      const queue = SpacedRepetitionEngine.getStudyQueue(words, 10);
+      TestRunner.assertEqual(queue[0].word, 'hard', 'Should prioritize lower mastery word');
+    });
+    
+    /**
+     * UIManager Module
+     * Handles UI rendering, notifications, modals, and loading states
+     */
+    const UIManager = {
+      mainContent: null,
+      toastContainer: null,
+      
+      /**
+       * Initialize UI Manager
+       */
+      init() {
+        this.mainContent = document.getElementById('app-main');
+        this.createToastContainer();
+        
+        // Listen for view changes
+        document.addEventListener('viewchange', (e) => {
+          this.renderView(e.detail.view);
+        });
+      },
+      
+      /**
+       * Create toast container
+       */
+      createToastContainer() {
+        if (!document.querySelector('.toast-container')) {
+          this.toastContainer = document.createElement('div');
+          this.toastContainer.className = 'toast-container';
+          document.body.appendChild(this.toastContainer);
+        } else {
+          this.toastContainer = document.querySelector('.toast-container');
+        }
+      },
+      
+      /**
+       * Show toast notification
+       * @param {string} message - Message to display
+       * @param {string} type - Type: success, error, warning, info
+       * @param {number} duration - Duration in ms (default 3000)
+       */
+      showToast(message, type = 'info', duration = 3000) {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        const icons = {
+          success: 'fa-check-circle',
+          error: 'fa-exclamation-circle',
+          warning: 'fa-exclamation-triangle',
+          info: 'fa-info-circle'
+        };
+        
+        // Convert newlines to <br> for proper display
+        const formattedMessage = message.replace(/\n/g, '<br>');
+        
+        toast.innerHTML = `
+          <i class="fas ${icons[type]} toast-icon"></i>
+          <div class="toast-content">
+            <div class="toast-message">${formattedMessage}</div>
+          </div>
+          <button class="toast-close" aria-label="Close">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+        
+        const closeBtn = toast.querySelector('.toast-close');
+        closeBtn.addEventListener('click', () => {
+          this.removeToast(toast);
+        });
+        
+        this.toastContainer.appendChild(toast);
+        
+        // Auto remove after duration
+        if (duration > 0) {
+          setTimeout(() => {
+            this.removeToast(toast);
+          }, duration);
+        }
+      },
+      
+      /**
+       * Remove toast
+       * @param {HTMLElement} toast - Toast element
+       */
+      removeToast(toast) {
+        toast.style.animation = 'slideIn 0.3s ease-out reverse';
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+          }
+        }, 300);
+      },
+      
+      /**
+       * Show modal dialog
+       * @param {Object} options - Modal options
+       * @returns {Promise} Resolves when modal is closed
+       */
+      showModal(options = {}) {
+        return new Promise((resolve) => {
+          const {
+            title = 'Dialog',
+            content = '',
+            confirmText = 'OK',
+            cancelText = 'Cancel',
+            showCancel = true,
+            onConfirm = null,
+            onCancel = null
+          } = options;
+          
+          const overlay = document.createElement('div');
+          overlay.className = 'modal-overlay';
+          
+          overlay.innerHTML = `
+            <div class="modal">
+              <div class="modal-header">
+                <h2 class="modal-title">${title}</h2>
+                <button class="modal-close" aria-label="Close">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="modal-body">
+                ${content}
+              </div>
+              <div class="modal-footer">
+                ${showCancel ? `<button class="btn btn-secondary modal-cancel">${cancelText}</button>` : ''}
+                <button class="btn btn-primary modal-confirm">${confirmText}</button>
+              </div>
+            </div>
+          `;
+          
+          document.body.appendChild(overlay);
+          
+          const closeModal = (result) => {
+            overlay.style.animation = 'fadeIn 0.2s ease-out reverse';
+            setTimeout(() => {
+              if (overlay.parentNode) {
+                overlay.parentNode.removeChild(overlay);
+              }
+              resolve(result);
+            }, 200);
+          };
+          
+          // Close button
+          overlay.querySelector('.modal-close').addEventListener('click', () => {
+            if (onCancel) onCancel();
+            closeModal(false);
+          });
+          
+          // Cancel button
+          const cancelBtn = overlay.querySelector('.modal-cancel');
+          if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+              if (onCancel) onCancel();
+              closeModal(false);
+            });
+          }
+          
+          // Confirm button
+          overlay.querySelector('.modal-confirm').addEventListener('click', () => {
+            if (onConfirm) onConfirm();
+            closeModal(true);
+          });
+          
+          // Click outside to close
+          overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+              if (onCancel) onCancel();
+              closeModal(false);
+            }
+          });
+        });
+      },
+      
+      /**
+       * Show loading overlay
+       * @param {string} message - Loading message
+       */
+      showLoading(message = 'Loading...') {
+        if (document.querySelector('.loading-overlay')) {
+          return;
+        }
+        
+        const overlay = document.createElement('div');
+        overlay.className = 'loading-overlay';
+        overlay.innerHTML = `
+          <div class="loading-spinner"></div>
+          <div class="loading-text">${message}</div>
+        `;
+        
+        document.body.appendChild(overlay);
+      },
+      
+      /**
+       * Hide loading overlay
+       */
+      hideLoading() {
+        const overlay = document.querySelector('.loading-overlay');
+        if (overlay) {
+          overlay.style.animation = 'fadeIn 0.2s ease-out reverse';
+          setTimeout(() => {
+            if (overlay.parentNode) {
+              overlay.parentNode.removeChild(overlay);
+            }
+          }, 200);
+        }
+      },
+      
+      /**
+       * Render a view
+       * @param {string} view - View name
+       */
+      renderView(view) {
+        // Add fade out animation
+        this.mainContent.style.opacity = '0';
+        
+        setTimeout(() => {
+          // Clear current content
+          this.mainContent.innerHTML = '';
+          
+          // Render new view
+          switch (view) {
+            case 'home':
+              this.renderHomeView();
+              break;
+            case 'study':
+              this.renderStudyView();
+              break;
+            case 'progress':
+              this.renderProgressView();
+              break;
+            case 'settings':
+              this.renderSettingsView();
+              break;
+            default:
+              this.renderHomeView();
+          }
+          
+          // Fade in
+          this.mainContent.style.transition = 'opacity 0.3s ease-in-out';
+          this.mainContent.style.opacity = '1';
+        }, 150);
+      },
+      
+      /**
+       * Render home view
+       */
+      renderHomeView() {
+        const words = DataManager.getWords();
+        const stats = SpacedRepetitionEngine.getStatistics(words);
+        const totalWords = stats.total;
+        const dueWords = stats.due;
+        const masteredWords = stats.mastered;
+        
+        this.mainContent.innerHTML = `
+          <div class="home-view">
+            <div class="welcome-section">
+              <h1 class="welcome-title">欢迎使用词汇记忆应用</h1>
+              <p class="welcome-subtitle">通过科学的间隔重复算法，高效记忆词汇</p>
+            </div>
+            
+            <div class="stats-grid">
+              <div class="stat-card">
+                <i class="fas fa-book stat-icon"></i>
+                <div class="stat-value">${totalWords}</div>
+                <div class="stat-label">总词汇量</div>
+              </div>
+              <div class="stat-card">
+                <i class="fas fa-clock stat-icon" style="color: var(--warning-color);"></i>
+                <div class="stat-value">${dueWords}</div>
+                <div class="stat-label">待复习</div>
+              </div>
+              <div class="stat-card">
+                <i class="fas fa-star stat-icon" style="color: var(--secondary-color);"></i>
+                <div class="stat-value">${masteredWords}</div>
+                <div class="stat-label">已掌握</div>
+              </div>
+            </div>
+            
+            <div class="actions-section">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+                <h2 class="section-title" style="margin-bottom: 0;">快速开始</h2>
+                <button class="btn btn-secondary" id="show-excel-help-btn" style="padding: var(--spacing-xs) var(--spacing-md);">
+                  <i class="fas fa-question-circle"></i>
+                  Excel格式说明
+                </button>
+              </div>
+              <div class="action-buttons">
+                <div class="action-card" id="import-excel-card">
+                  <i class="fas fa-file-excel action-icon" style="color: var(--secondary-color);"></i>
+                  <h3 class="action-title">导入Excel</h3>
+                  <p class="action-description">从Excel文件导入词汇列表<br>
+                  <small style="color: var(--text-light);">需要包含：Word（单词）、Definition（定义）列</small></p>
+                  <input type="file" id="excel-file-input" class="file-input" accept=".xlsx,.xls">
+                </div>
+                
+                <div class="action-card" id="start-flashcard-card" ${totalWords === 0 ? 'style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                  <i class="fas fa-layer-group action-icon" style="color: var(--info-color);"></i>
+                  <h3 class="action-title">开始闪卡</h3>
+                  <p class="action-description">通过闪卡模式学习词汇</p>
+                </div>
+                
+                <div class="action-card" id="start-quiz-card" ${totalWords === 0 ? 'style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                  <i class="fas fa-question-circle action-icon" style="color: var(--primary-color);"></i>
+                  <h3 class="action-title">开始测验</h3>
+                  <p class="action-description">通过测验检验学习成果</p>
+                </div>
+              </div>
+            </div>
+            
+            ${dueWords > 0 ? `
+              <div class="actions-section">
+                <h2 class="section-title">今日任务</h2>
+                <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
+                  你有 <strong style="color: var(--warning-color);">${dueWords}</strong> 个词汇需要复习
+                </p>
+                <button class="btn btn-primary" id="review-now-btn">
+                  <i class="fas fa-play"></i>
+                  立即复习
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        `;
+        
+        // Add event listeners
+        this.attachHomeViewListeners();
+      },
+      
+      /**
+       * Attach event listeners for home view
+       */
+      attachHomeViewListeners() {
+        // Import Excel
+        const importCard = document.getElementById('import-excel-card');
+        const fileInput = document.getElementById('excel-file-input');
+        
+        if (importCard && fileInput) {
+          importCard.addEventListener('click', () => {
+            fileInput.click();
+          });
+          
+          fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+              await this.handleExcelImport(file);
+              fileInput.value = ''; // Reset input
+            }
+          });
+        }
+        
+        // Start Flashcard
+        const flashcardCard = document.getElementById('start-flashcard-card');
+        if (flashcardCard) {
+          flashcardCard.addEventListener('click', () => {
+            const words = DataManager.getWords();
+            if (words.length > 0) {
+              NavigationManager.navigateTo('study');
+              this.showToast('闪卡模式即将推出', 'info');
+            }
+          });
+        }
+        
+        // Start Quiz
+        const quizCard = document.getElementById('start-quiz-card');
+        if (quizCard) {
+          quizCard.addEventListener('click', () => {
+            const words = DataManager.getWords();
+            if (words.length > 0) {
+              this.showToast('测验模式即将推出', 'info');
+            }
+          });
+        }
+        
+        // Review Now
+        const reviewBtn = document.getElementById('review-now-btn');
+        if (reviewBtn) {
+          reviewBtn.addEventListener('click', () => {
+            NavigationManager.navigateTo('study');
+            this.showToast('复习模式即将推出', 'info');
+          });
+        }
+        
+        // Show Excel help
+        const excelHelpBtn = document.getElementById('show-excel-help-btn');
+        if (excelHelpBtn) {
+          excelHelpBtn.addEventListener('click', () => {
+            this.showExcelFormatHelp();
+          });
+        }
+      },
+      
+      /**
+       * Show Excel format help modal
+       */
+      showExcelFormatHelp() {
+        const helpContent = `
+          <div style="line-height: 1.8;">
+            <p style="margin-bottom: var(--spacing-md);">Excel文件的第一行应该是列名（标题行），后续行是数据。</p>
+            
+            <h3 style="margin-bottom: var(--spacing-sm); color: var(--primary-color);">必需列：</h3>
+            <ul style="margin-bottom: var(--spacing-md); padding-left: var(--spacing-lg);">
+              <li><strong>Word</strong>（或：单词、词汇、词）- 要学习的单词</li>
+              <li><strong>Definition</strong>（或：定义、释义、意思）- 单词的定义</li>
+            </ul>
+            
+            <h3 style="margin-bottom: var(--spacing-sm); color: var(--primary-color);">可选列：</h3>
+            <ul style="margin-bottom: var(--spacing-md); padding-left: var(--spacing-lg);">
+              <li><strong>Example</strong>（或：例句、示例）- 使用示例</li>
+              <li><strong>Notes</strong>（或：备注、笔记）- 额外说明</li>
+            </ul>
+            
+            <h3 style="margin-bottom: var(--spacing-sm); color: var(--primary-color);">示例格式：</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: var(--spacing-md);">
+              <thead>
+                <tr style="background-color: var(--bg-tertiary);">
+                  <th style="padding: var(--spacing-sm); border: 1px solid var(--border-color);">Word</th>
+                  <th style="padding: var(--spacing-sm); border: 1px solid var(--border-color);">Definition</th>
+                  <th style="padding: var(--spacing-sm); border: 1px solid var(--border-color);">Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding: var(--spacing-sm); border: 1px solid var(--border-color);">hello</td>
+                  <td style="padding: var(--spacing-sm); border: 1px solid var(--border-color);">你好，问候语</td>
+                  <td style="padding: var(--spacing-sm); border: 1px solid var(--border-color);">Hello, how are you?</td>
+                </tr>
+                <tr>
+                  <td style="padding: var(--spacing-sm); border: 1px solid var(--border-color);">world</td>
+                  <td style="padding: var(--spacing-sm); border: 1px solid var(--border-color);">世界</td>
+                  <td style="padding: var(--spacing-sm); border: 1px solid var(--border-color);">Welcome to the world</td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <p style="color: var(--text-secondary); font-size: var(--font-size-sm);">
+              <i class="fas fa-info-circle"></i> 
+              支持中英文列名，系统会自动识别。
+            </p>
+          </div>
+        `;
+        
+        this.showModal({
+          title: 'Excel文件格式说明',
+          content: helpContent,
+          confirmText: '知道了',
+          showCancel: false
+        });
+      },
+      
+      /**
+       * Handle Excel file import
+       * @param {File} file - Excel file
+       */
+      async handleExcelImport(file) {
+        this.showLoading('正在导入Excel文件...');
+        
+        try {
+          const result = await ExcelImporter.importWords(file, (progress, message) => {
+            this.showLoading(message || `导入中... ${progress}%`);
+          });
+          
+          this.hideLoading();
+          
+          if (result.success) {
+            this.showToast(result.message, 'success');
+            // Refresh home view to update stats
+            this.renderHomeView();
+          } else {
+            this.showToast(result.error, 'error', 5000);
+          }
+        } catch (error) {
+          this.hideLoading();
+          this.showToast(`导入失败: ${error.message}`, 'error', 5000);
+        }
+      },
+      
+      /**
+       * Render study view with spaced repetition
+       */
+      renderStudyView() {
+        const words = DataManager.getWords();
+        
+        if (words.length === 0) {
+          this.mainContent.innerHTML = `
+            <div style="text-align: center; padding: var(--spacing-2xl);">
+              <i class="fas fa-book-open" style="font-size: 4rem; color: var(--text-light); margin-bottom: var(--spacing-lg);"></i>
+              <h2>还没有词汇</h2>
+              <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">请先导入Excel文件添加词汇</p>
+              <button class="btn btn-primary" onclick="NavigationManager.navigateTo('home')">
+                <i class="fas fa-home"></i>
+                返回主页
+              </button>
+            </div>
+          `;
+          return;
+        }
+        
+        const studyQueue = SpacedRepetitionEngine.getStudyQueue(words, 20);
+        
+        if (studyQueue.length === 0) {
+          this.mainContent.innerHTML = `
+            <div style="text-align: center; padding: var(--spacing-2xl);">
+              <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--secondary-color); margin-bottom: var(--spacing-lg);"></i>
+              <h2>太棒了！</h2>
+              <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">暂时没有需要复习的词汇</p>
+              <button class="btn btn-primary" onclick="NavigationManager.navigateTo('home')">
+                <i class="fas fa-home"></i>
+                返回主页
+              </button>
+            </div>
+          `;
+          return;
+        }
+        
+        // Start study session
+        this.startStudySession(studyQueue);
+      },
+      
+      /**
+       * Start study session
+       * @param {WordEntry[]} studyQueue - Words to study
+       */
+      startStudySession(studyQueue) {
+        let currentIndex = 0;
+        let showingAnswer = false;
+        
+        const renderCard = () => {
+          const word = studyQueue[currentIndex];
+          const progress = currentIndex + 1;
+          const total = studyQueue.length;
+          
+          this.mainContent.innerHTML = `
+            <div style="max-width: 800px; margin: 0 auto;">
+              <!-- Progress -->
+              <div style="margin-bottom: var(--spacing-xl);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
+                  <span style="color: var(--text-secondary);">进度: ${progress}/${total}</span>
+                  <span style="color: var(--text-secondary);">掌握度: ${word.masteryLevel}%</span>
+                </div>
+                <div style="height: 8px; background-color: var(--bg-tertiary); border-radius: var(--radius-full); overflow: hidden;">
+                  <div style="height: 100%; background-color: var(--primary-color); width: ${(progress/total)*100}%; transition: width 0.3s;"></div>
+                </div>
+              </div>
+              
+              <!-- Card -->
+              <div class="study-card" style="background-color: var(--bg-primary); border-radius: var(--radius-xl); padding: var(--spacing-2xl); box-shadow: var(--shadow-lg); min-height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; margin-bottom: var(--spacing-xl);">
+                <div class="card-front" style="display: ${showingAnswer ? 'none' : 'block'};">
+                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">单词</div>
+                  <h1 style="font-size: var(--font-size-4xl); color: var(--text-primary); margin-bottom: var(--spacing-lg);">${word.word}</h1>
+                  <button class="btn btn-primary btn-lg" id="show-answer-btn" style="padding: var(--spacing-md) var(--spacing-2xl); font-size: var(--font-size-lg);">
+                    <i class="fas fa-eye"></i>
+                    显示答案
+                  </button>
+                </div>
+                
+                <div class="card-back" style="display: ${showingAnswer ? 'block' : 'none'};">
+                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-sm);">单词</div>
+                  <h2 style="font-size: var(--font-size-2xl); color: var(--text-primary); margin-bottom: var(--spacing-lg);">${word.word}</h2>
+                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-sm);">定义</div>
+                  <p style="font-size: var(--font-size-xl); color: var(--text-primary); margin-bottom: var(--spacing-xl);">${word.definition}</p>
+                  ${word.example ? `
+                    <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-sm);">例句</div>
+                    <p style="font-size: var(--font-size-base); color: var(--text-secondary); font-style: italic;">${word.example}</p>
+                  ` : ''}
+                </div>
+              </div>
+              
+              <!-- Rating Buttons -->
+              <div id="rating-buttons" style="display: ${showingAnswer ? 'grid' : 'none'}; grid-template-columns: repeat(4, 1fr); gap: var(--spacing-md);">
+                <button class="btn rating-btn" data-rating="1" data-key="1" style="background-color: var(--danger-color); color: white; padding: var(--spacing-lg); flex-direction: column;">
+                  <i class="fas fa-times-circle" style="font-size: var(--font-size-2xl); margin-bottom: var(--spacing-sm);"></i>
+                  <span>再来</span>
+                  <small style="opacity: 0.8; font-size: var(--font-size-xs);">&lt;1分钟</small>
+                  <small style="opacity: 0.6; font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">按 1</small>
+                </button>
+                <button class="btn rating-btn" data-rating="2" data-key="2" style="background-color: var(--warning-color); color: white; padding: var(--spacing-lg); flex-direction: column;">
+                  <i class="fas fa-frown" style="font-size: var(--font-size-2xl); margin-bottom: var(--spacing-sm);"></i>
+                  <span>困难</span>
+                  <small style="opacity: 0.8; font-size: var(--font-size-xs);">&lt;${this.formatInterval(word, 1.2)}</small>
+                  <small style="opacity: 0.6; font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">按 2</small>
+                </button>
+                <button class="btn rating-btn" data-rating="3" data-key="3" style="background-color: var(--secondary-color); color: white; padding: var(--spacing-lg); flex-direction: column;">
+                  <i class="fas fa-smile" style="font-size: var(--font-size-2xl); margin-bottom: var(--spacing-sm);"></i>
+                  <span>良好</span>
+                  <small style="opacity: 0.8; font-size: var(--font-size-xs);">&lt;${this.formatInterval(word, 2.5)}</small>
+                  <small style="opacity: 0.6; font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">按 3</small>
+                </button>
+                <button class="btn rating-btn" data-rating="4" data-key="4" style="background-color: var(--info-color); color: white; padding: var(--spacing-lg); flex-direction: column;">
+                  <i class="fas fa-laugh-beam" style="font-size: var(--font-size-2xl); margin-bottom: var(--spacing-sm);"></i>
+                  <span>简单</span>
+                  <small style="opacity: 0.8; font-size: var(--font-size-xs);">&lt;${this.formatInterval(word, 3.5)}</small>
+                  <small style="opacity: 0.6; font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">按 4</small>
+                </button>
+              </div>
+              
+              <!-- Keyboard Shortcuts Hint -->
+              <div style="text-align: center; margin-top: var(--spacing-md); color: var(--text-light); font-size: var(--font-size-sm);">
+                ${!showingAnswer ? '💡 按 <strong>空格</strong> 显示答案' : '💡 按 <strong>1-4</strong> 快速评分'}
+              </div>
+              
+              <!-- Navigation -->
+              <div style="text-align: center; margin-top: var(--spacing-xl);">
+                <button class="btn btn-secondary" onclick="NavigationManager.navigateTo('home')">
+                  <i class="fas fa-times"></i>
+                  结束学习
+                </button>
+              </div>
+            </div>
+          `;
+          
+          // Add event listeners
+          const showAnswerBtn = document.getElementById('show-answer-btn');
+          if (showAnswerBtn) {
+            showAnswerBtn.addEventListener('click', () => {
+              showingAnswer = true;
+              renderCard();
+            });
+          }
+          
+          const ratingButtons = document.querySelectorAll('.rating-btn');
+          ratingButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+              const rating = parseInt(btn.getAttribute('data-rating'));
+              this.handleRating(word.id, rating, () => {
+                currentIndex++;
+                showingAnswer = false;
+                
+                if (currentIndex >= studyQueue.length) {
+                  this.showStudyComplete(studyQueue.length);
+                } else {
+                  renderCard();
+                }
+              });
+            });
+          });
+          
+          // Keyboard shortcuts
+          const handleKeyPress = (e) => {
+            // Space to show answer
+            if (e.code === 'Space' && !showingAnswer) {
+              e.preventDefault();
+              showingAnswer = true;
+              renderCard();
+              return;
+            }
+            
+            // Number keys for rating (only when answer is shown)
+            if (showingAnswer && ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Numpad1', 'Numpad2', 'Numpad3', 'Numpad4'].includes(e.code)) {
+              e.preventDefault();
+              const rating = parseInt(e.code.replace('Digit', '').replace('Numpad', ''));
+              if (rating >= 1 && rating <= 4) {
+                this.handleRating(word.id, rating, () => {
+                  currentIndex++;
+                  showingAnswer = false;
+                  
+                  if (currentIndex >= studyQueue.length) {
+                    document.removeEventListener('keydown', handleKeyPress);
+                    this.showStudyComplete(studyQueue.length);
+                  } else {
+                    renderCard();
+                  }
+                });
+              }
+            }
+          };
+          
+          // Add keyboard listener
+          document.addEventListener('keydown', handleKeyPress);
+        };
+        
+        renderCard();
+      },
+      
+      /**
+       * Format interval for display
+       * @param {WordEntry} word - Word entry
+       * @param {number} factor - Ease factor
+       * @returns {string} Formatted interval
+       */
+      formatInterval(word, factor) {
+        const days = SpacedRepetitionEngine.calculateInterval(word, factor);
+        
+        if (days < 0.01) {
+          return '1分钟';
+        } else if (days < 1) {
+          const hours = Math.round(days * 24);
+          return `${hours}小时`;
+        } else if (days < 30) {
+          return `${Math.round(days)}天`;
+        } else {
+          const months = Math.round(days / 30);
+          return `${months}个月`;
+        }
+      },
+      
+      /**
+       * Handle rating
+       * @param {string} wordId - Word ID
+       * @param {number} rating - Rating (1-4)
+       * @param {Function} callback - Callback after update
+       */
+      handleRating(wordId, rating, callback) {
+        const result = SpacedRepetitionEngine.recordReview(wordId, rating);
+        
+        if (result.success) {
+          const ratingText = ['', '再来', '困难', '良好', '简单'][rating];
+          this.showToast(`已记录: ${ratingText}`, 'success', 1000);
+          callback();
+        } else {
+          this.showToast(result.error, 'error');
+        }
+      },
+      
+      /**
+       * Show study complete screen
+       * @param {number} count - Number of words studied
+       */
+      showStudyComplete(count) {
+        const stats = SpacedRepetitionEngine.getStatistics(DataManager.getWords());
+        
+        // Calculate achievement
+        let achievement = '';
+        let achievementIcon = 'fa-trophy';
+        let achievementColor = 'var(--warning-color)';
+        
+        if (count >= 50) {
+          achievement = '学习大师！';
+          achievementIcon = 'fa-crown';
+          achievementColor = 'var(--warning-color)';
+        } else if (count >= 20) {
+          achievement = '学习达人！';
+          achievementIcon = 'fa-medal';
+          achievementColor = 'var(--warning-color)';
+        } else if (count >= 10) {
+          achievement = '坚持不懈！';
+          achievementIcon = 'fa-star';
+          achievementColor = 'var(--secondary-color)';
+        } else {
+          achievement = '很棒的开始！';
+          achievementIcon = 'fa-thumbs-up';
+          achievementColor = 'var(--info-color)';
+        }
+        
+        this.mainContent.innerHTML = `
+          <div style="text-align: center; padding: var(--spacing-2xl); max-width: 600px; margin: 0 auto;">
+            <div style="animation: bounce 0.6s ease-in-out;">
+              <i class="fas ${achievementIcon}" style="font-size: 5rem; color: ${achievementColor}; margin-bottom: var(--spacing-lg);"></i>
+            </div>
+            <h1 style="margin-bottom: var(--spacing-sm);">${achievement}</h1>
+            <p style="font-size: var(--font-size-xl); color: var(--text-secondary); margin-bottom: var(--spacing-2xl);">
+              你已完成 <strong style="color: var(--primary-color);">${count}</strong> 个词汇的学习
+            </p>
+            
+            <div class="stats-grid" style="margin-bottom: var(--spacing-2xl);">
+              <div class="stat-card">
+                <div class="stat-value">${stats.due}</div>
+                <div class="stat-label">待复习</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">${stats.mastered}</div>
+                <div class="stat-label">已掌握</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">${stats.averageMastery}%</div>
+                <div class="stat-label">平均掌握度</div>
+              </div>
+            </div>
+            
+            ${stats.due > 0 ? `
+              <div style="background-color: var(--bg-secondary); padding: var(--spacing-lg); border-radius: var(--radius-lg); margin-bottom: var(--spacing-lg);">
+                <p style="color: var(--text-secondary);">
+                  <i class="fas fa-info-circle"></i>
+                  还有 <strong style="color: var(--primary-color);">${stats.due}</strong> 个词汇等待复习
+                </p>
+              </div>
+            ` : `
+              <div style="background-color: var(--bg-secondary); padding: var(--spacing-lg); border-radius: var(--radius-lg); margin-bottom: var(--spacing-lg);">
+                <p style="color: var(--secondary-color);">
+                  <i class="fas fa-check-circle"></i>
+                  所有词汇都已复习完毕！
+                </p>
+              </div>
+            `}
+            
+            <div style="display: flex; gap: var(--spacing-md); justify-content: center;">
+              ${stats.due > 0 ? `
+                <button class="btn btn-primary" onclick="UIManager.renderStudyView()">
+                  <i class="fas fa-redo"></i>
+                  继续学习
+                </button>
+              ` : ''}
+              <button class="btn btn-secondary" onclick="NavigationManager.navigateTo('home')">
+                <i class="fas fa-home"></i>
+                返回主页
+              </button>
+            </div>
+          </div>
+        `;
+      },
+      
+      /**
+       * Render progress view
+       */
+      renderProgressView() {
+        const words = DataManager.getWords();
+        const stats = SpacedRepetitionEngine.getStatistics(words);
+        
+        if (words.length === 0) {
+          this.mainContent.innerHTML = `
+            <div style="text-align: center; padding: var(--spacing-2xl);">
+              <i class="fas fa-chart-line" style="font-size: 4rem; color: var(--text-light); margin-bottom: var(--spacing-lg);"></i>
+              <h2>还没有学习数据</h2>
+              <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">开始学习后，这里会显示你的进度</p>
+              <button class="btn btn-primary" onclick="NavigationManager.navigateTo('home')">
+                <i class="fas fa-home"></i>
+                返回主页
+              </button>
+            </div>
+          `;
+          return;
+        }
+        
+        // Calculate additional stats
+        const totalReviews = words.reduce((sum, w) => sum + w.reviewCount, 0);
+        const accuracy = totalReviews > 0 
+          ? Math.round((words.reduce((sum, w) => sum + w.correctCount, 0) / totalReviews) * 100)
+          : 0;
+        
+        // Group words by mastery level
+        const masteryGroups = {
+          beginner: words.filter(w => w.masteryLevel < 30).length,
+          learning: words.filter(w => w.masteryLevel >= 30 && w.masteryLevel < 60).length,
+          familiar: words.filter(w => w.masteryLevel >= 60 && w.masteryLevel < 80).length,
+          mastered: words.filter(w => w.masteryLevel >= 80).length
+        };
+        
+        this.mainContent.innerHTML = `
+          <div style="max-width: 900px; margin: 0 auto;">
+            <h1 style="margin-bottom: var(--spacing-xl);">学习进度</h1>
+            
+            <!-- Overall Stats -->
+            <div class="stats-grid" style="margin-bottom: var(--spacing-2xl);">
+              <div class="stat-card">
+                <i class="fas fa-book stat-icon"></i>
+                <div class="stat-value">${stats.total}</div>
+                <div class="stat-label">总词汇量</div>
+              </div>
+              <div class="stat-card">
+                <i class="fas fa-redo stat-icon" style="color: var(--info-color);"></i>
+                <div class="stat-value">${totalReviews}</div>
+                <div class="stat-label">总复习次数</div>
+              </div>
+              <div class="stat-card">
+                <i class="fas fa-chart-line stat-icon" style="color: var(--secondary-color);"></i>
+                <div class="stat-value">${stats.averageMastery}%</div>
+                <div class="stat-label">平均掌握度</div>
+              </div>
+              <div class="stat-card">
+                <i class="fas fa-bullseye stat-icon" style="color: var(--warning-color);"></i>
+                <div class="stat-value">${accuracy}%</div>
+                <div class="stat-label">正确率</div>
+              </div>
+            </div>
+            
+            <!-- Mastery Distribution -->
+            <div style="background-color: var(--bg-primary); border-radius: var(--radius-xl); padding: var(--spacing-xl); box-shadow: var(--shadow-md); margin-bottom: var(--spacing-xl);">
+              <h2 style="margin-bottom: var(--spacing-lg);">掌握度分布</h2>
+              
+              <div style="margin-bottom: var(--spacing-lg);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
+                  <span>初学 (0-30%)</span>
+                  <strong>${masteryGroups.beginner} 词</strong>
+                </div>
+                <div style="height: 12px; background-color: var(--bg-tertiary); border-radius: var(--radius-full); overflow: hidden;">
+                  <div style="height: 100%; background-color: var(--danger-color); width: ${(masteryGroups.beginner/stats.total)*100}%; transition: width 0.3s;"></div>
+                </div>
+              </div>
+              
+              <div style="margin-bottom: var(--spacing-lg);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
+                  <span>学习中 (30-60%)</span>
+                  <strong>${masteryGroups.learning} 词</strong>
+                </div>
+                <div style="height: 12px; background-color: var(--bg-tertiary); border-radius: var(--radius-full); overflow: hidden;">
+                  <div style="height: 100%; background-color: var(--warning-color); width: ${(masteryGroups.learning/stats.total)*100}%; transition: width 0.3s;"></div>
+                </div>
+              </div>
+              
+              <div style="margin-bottom: var(--spacing-lg);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
+                  <span>熟悉 (60-80%)</span>
+                  <strong>${masteryGroups.familiar} 词</strong>
+                </div>
+                <div style="height: 12px; background-color: var(--bg-tertiary); border-radius: var(--radius-full); overflow: hidden;">
+                  <div style="height: 100%; background-color: var(--info-color); width: ${(masteryGroups.familiar/stats.total)*100}%; transition: width 0.3s;"></div>
+                </div>
+              </div>
+              
+              <div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
+                  <span>已掌握 (80-100%)</span>
+                  <strong>${masteryGroups.mastered} 词</strong>
+                </div>
+                <div style="height: 12px; background-color: var(--bg-tertiary); border-radius: var(--radius-full); overflow: hidden;">
+                  <div style="height: 100%; background-color: var(--secondary-color); width: ${(masteryGroups.mastered/stats.total)*100}%; transition: width 0.3s;"></div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Study Status -->
+            <div style="background-color: var(--bg-primary); border-radius: var(--radius-xl); padding: var(--spacing-xl); box-shadow: var(--shadow-md);">
+              <h2 style="margin-bottom: var(--spacing-lg);">学习状态</h2>
+              
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-md);">
+                <div style="padding: var(--spacing-md); background-color: var(--bg-secondary); border-radius: var(--radius-md);">
+                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-xs);">新词汇</div>
+                  <div style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--info-color);">${stats.new}</div>
+                </div>
+                
+                <div style="padding: var(--spacing-md); background-color: var(--bg-secondary); border-radius: var(--radius-md);">
+                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-xs);">学习中</div>
+                  <div style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--warning-color);">${stats.learning}</div>
+                </div>
+                
+                <div style="padding: var(--spacing-md); background-color: var(--bg-secondary); border-radius: var(--radius-md);">
+                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-xs);">待复习</div>
+                  <div style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--danger-color);">${stats.due}</div>
+                </div>
+                
+                <div style="padding: var(--spacing-md); background-color: var(--bg-secondary); border-radius: var(--radius-md);">
+                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-xs);">已掌握</div>
+                  <div style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--secondary-color);">${stats.mastered}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+      
+      /**
+       * Render settings view
+       */
+      renderSettingsView() {
+        const storageInfo = DataManager.getStorageInfo();
+        const words = DataManager.getWords();
+        
+        this.mainContent.innerHTML = `
+          <div style="max-width: 700px; margin: 0 auto;">
+            <h1 style="margin-bottom: var(--spacing-xl);">设置</h1>
+            
+            <!-- Data Management -->
+            <div style="background-color: var(--bg-primary); border-radius: var(--radius-xl); padding: var(--spacing-xl); box-shadow: var(--shadow-md); margin-bottom: var(--spacing-xl);">
+              <h2 style="margin-bottom: var(--spacing-lg);">数据管理</h2>
+              
+              <div style="margin-bottom: var(--spacing-lg);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
+                  <div>
+                    <div style="font-weight: var(--font-weight-semibold); margin-bottom: var(--spacing-xs);">导出数据</div>
+                    <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">将所有词汇和学习进度导出为JSON文件</div>
+                  </div>
+                  <button class="btn btn-primary" id="export-data-btn">
+                    <i class="fas fa-download"></i>
+                    导出
+                  </button>
+                </div>
+              </div>
+              
+              <div style="margin-bottom: var(--spacing-lg); padding-top: var(--spacing-lg); border-top: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
+                  <div>
+                    <div style="font-weight: var(--font-weight-semibold); margin-bottom: var(--spacing-xs);">清除所有数据</div>
+                    <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">删除所有词汇和学习记录（不可恢复）</div>
+                  </div>
+                  <button class="btn btn-danger" id="clear-data-btn">
+                    <i class="fas fa-trash"></i>
+                    清除
+                  </button>
+                </div>
+              </div>
+              
+              <div style="padding-top: var(--spacing-lg); border-top: 1px solid var(--border-color);">
+                <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">
+                  <div style="margin-bottom: var(--spacing-xs);">
+                    <i class="fas fa-database"></i>
+                    存储使用: ${storageInfo.totalSizeKB} KB / ${storageInfo.storageLimitMB} MB (${storageInfo.usagePercent}%)
+                  </div>
+                  <div>
+                    <i class="fas fa-book"></i>
+                    词汇数量: ${words.length}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- About -->
+            <div style="background-color: var(--bg-primary); border-radius: var(--radius-xl); padding: var(--spacing-xl); box-shadow: var(--shadow-md);">
+              <h2 style="margin-bottom: var(--spacing-lg);">关于</h2>
+              <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
+                词汇记忆应用使用科学的间隔重复算法（SM-2），帮助你高效记忆词汇。
+              </p>
+              <div style="font-size: var(--font-size-sm); color: var(--text-light);">
+                <div>版本: 1.0.0</div>
+                <div>算法: SM-2 简化版</div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        // Add event listeners
+        this.attachSettingsListeners();
+      },
+      
+      /**
+       * Attach settings view event listeners
+       */
+      attachSettingsListeners() {
+        // Export data
+        const exportBtn = document.getElementById('export-data-btn');
+        if (exportBtn) {
+          exportBtn.addEventListener('click', () => {
+            this.exportData();
+          });
+        }
+        
+        // Clear data
+        const clearBtn = document.getElementById('clear-data-btn');
+        if (clearBtn) {
+          clearBtn.addEventListener('click', async () => {
+            const confirmed = await this.showModal({
+              title: '确认清除数据',
+              content: '<p style="color: var(--danger-color); margin-bottom: var(--spacing-md);"><i class="fas fa-exclamation-triangle"></i> <strong>警告：此操作不可恢复！</strong></p><p>确定要删除所有词汇和学习记录吗？</p>',
+              confirmText: '确认清除',
+              cancelText: '取消'
+            });
+            
+            if (confirmed) {
+              const result = DataManager.clearAll();
+              if (result.success) {
+                this.showToast('所有数据已清除', 'success');
+                this.renderSettingsView();
+              } else {
+                this.showToast(result.error, 'error');
+              }
+            }
+          });
+        }
+      },
+      
+      /**
+       * Export data to JSON file
+       */
+      exportData() {
+        const words = DataManager.getWords();
+        
+        if (words.length === 0) {
+          this.showToast('没有数据可导出', 'warning');
+          return;
+        }
+        
+        const exportData = {
+          version: '1.0',
+          exportDate: new Date().toISOString(),
+          words: words.map(w => w.toJSON())
+        };
+        
+        const jsonString = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `vocabulary-backup-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        this.showToast('数据导出成功', 'success');
+      }
+    };
+    
+    /**
+     * SpacedRepetitionEngine Module
+     * Implements simplified SM-2 algorithm for optimal learning intervals
+     */
+    const SpacedRepetitionEngine = {
+      // Performance ratings
+      RATING: {
+        AGAIN: 1,    // 完全不记得
+        HARD: 2,     // 困难
+        GOOD: 3,     // 良好
+        EASY: 4      // 简单
+      },
+      
+      // Minimum interval in milliseconds (1 minute for testing, normally 1 day)
+      MIN_INTERVAL: 60 * 1000, // 1 minute
+      
+      // Day in milliseconds
+      DAY_MS: 24 * 60 * 60 * 1000,
+      
+      /**
+       * Calculate next review interval using simplified SM-2 algorithm
+       * @param {WordEntry} word - Word entry
+       * @param {number} rating - Performance rating (1-4)
+       * @returns {Object} Updated word data with new interval and next review time
+       */
+      calculateNextReview(word, rating) {
+        const now = Date.now();
+        
+        // Initialize if first review
+        if (!word.lastReviewed) {
+          return this.initializeReview(word, rating, now);
+        }
+        
+        // Calculate new values based on rating
+        let newDifficulty = word.difficulty;
+        let newMasteryLevel = word.masteryLevel;
+        let intervalDays = 0;
+        
+        switch (rating) {
+          case this.RATING.AGAIN:
+            // Reset interval, increase difficulty
+            intervalDays = 0.0007; // ~1 minute
+            newDifficulty = Math.min(5, word.difficulty + 0.5);
+            newMasteryLevel = Math.max(0, word.masteryLevel - 20);
+            break;
+            
+          case this.RATING.HARD:
+            // Short interval, slight difficulty increase
+            intervalDays = this.calculateInterval(word, 1.2);
+            newDifficulty = Math.min(5, word.difficulty + 0.15);
+            newMasteryLevel = Math.min(100, word.masteryLevel + 5);
+            break;
+            
+          case this.RATING.GOOD:
+            // Normal interval
+            intervalDays = this.calculateInterval(word, 2.5);
+            newDifficulty = Math.max(1.3, word.difficulty - 0.1);
+            newMasteryLevel = Math.min(100, word.masteryLevel + 10);
+            break;
+            
+          case this.RATING.EASY:
+            // Long interval, decrease difficulty
+            intervalDays = this.calculateInterval(word, 3.5);
+            newDifficulty = Math.max(1.3, word.difficulty - 0.2);
+            newMasteryLevel = Math.min(100, word.masteryLevel + 15);
+            break;
+        }
+        
+        // Calculate next review timestamp
+        const intervalMs = Math.max(this.MIN_INTERVAL, intervalDays * this.DAY_MS);
+        const nextReview = now + intervalMs;
+        
+        // Update counters
+        const correctCount = rating >= this.RATING.GOOD ? word.correctCount + 1 : word.correctCount;
+        const incorrectCount = rating < this.RATING.GOOD ? word.incorrectCount + 1 : word.incorrectCount;
+        const reviewCount = word.reviewCount + 1;
+        
+        return {
+          lastReviewed: now,
+          nextReview: nextReview,
+          difficulty: newDifficulty,
+          masteryLevel: newMasteryLevel,
+          reviewCount: reviewCount,
+          correctCount: correctCount,
+          incorrectCount: incorrectCount
+        };
+      },
+      
+      /**
+       * Initialize first review
+       * @param {WordEntry} word - Word entry
+       * @param {number} rating - Performance rating
+       * @param {number} now - Current timestamp
+       * @returns {Object} Initial review data
+       */
+      initializeReview(word, rating, now) {
+        let intervalDays = 0.0007; // ~1 minute for first review
+        let masteryLevel = 0;
+        
+        if (rating === this.RATING.EASY) {
+          intervalDays = 4;
+          masteryLevel = 20;
+        } else if (rating === this.RATING.GOOD) {
+          intervalDays = 1;
+          masteryLevel = 10;
+        } else if (rating === this.RATING.HARD) {
+          intervalDays = 0.5;
+          masteryLevel = 5;
+        }
+        
+        const intervalMs = Math.max(this.MIN_INTERVAL, intervalDays * this.DAY_MS);
+        
+        return {
+          lastReviewed: now,
+          nextReview: now + intervalMs,
+          difficulty: word.difficulty,
+          masteryLevel: masteryLevel,
+          reviewCount: 1,
+          correctCount: rating >= this.RATING.GOOD ? 1 : 0,
+          incorrectCount: rating < this.RATING.GOOD ? 1 : 0
+        };
+      },
+      
+      /**
+       * Calculate interval based on previous reviews
+       * @param {WordEntry} word - Word entry
+       * @param {number} factor - Ease factor multiplier
+       * @returns {number} Interval in days
+       */
+      calculateInterval(word, factor) {
+        if (word.reviewCount === 0) {
+          return 1;
+        }
+        
+        // Calculate days since last review
+        const daysSinceReview = (Date.now() - word.lastReviewed) / this.DAY_MS;
+        
+        // Base interval calculation
+        let interval = daysSinceReview * factor;
+        
+        // Adjust based on difficulty (higher difficulty = shorter intervals)
+        interval = interval * (2.5 - word.difficulty / 2);
+        
+        // Minimum 1 minute, maximum 365 days
+        return Math.max(0.0007, Math.min(365, interval));
+      },
+      
+      /**
+       * Get words due for review
+       * @param {WordEntry[]} words - All words
+       * @returns {WordEntry[]} Words due for review
+       */
+      getDueWords(words) {
+        const now = Date.now();
+        return words.filter(word => {
+          // New words (never reviewed)
+          if (!word.lastReviewed) {
+            return true;
+          }
+          // Words with scheduled review time that has passed
+          if (word.nextReview && word.nextReview <= now) {
+            return true;
+          }
+          return false;
+        });
+      },
+      
+      /**
+       * Get prioritized study queue
+       * Prioritizes: 1) Due words with lower mastery, 2) New words, 3) Due words
+       * @param {WordEntry[]} words - All words
+       * @param {number} limit - Maximum number of words
+       * @returns {WordEntry[]} Prioritized words for study
+       */
+      getStudyQueue(words, limit = 20) {
+        const dueWords = this.getDueWords(words);
+        
+        // Sort by priority:
+        // 1. Lower mastery level (struggling words)
+        // 2. Never reviewed (new words)
+        // 3. Longer overdue
+        const prioritized = dueWords.sort((a, b) => {
+          // New words vs reviewed words
+          const aIsNew = !a.lastReviewed;
+          const bIsNew = !b.lastReviewed;
+          
+          if (aIsNew && !bIsNew) return 1;  // New words lower priority
+          if (!aIsNew && bIsNew) return -1;
+          
+          // Both reviewed: prioritize lower mastery
+          if (!aIsNew && !bIsNew) {
+            if (a.masteryLevel !== b.masteryLevel) {
+              return a.masteryLevel - b.masteryLevel;
+            }
+            // Same mastery: prioritize more overdue
+            return a.nextReview - b.nextReview;
+          }
+          
+          // Both new: random order
+          return Math.random() - 0.5;
+        });
+        
+        return prioritized.slice(0, limit);
+      },
+      
+      /**
+       * Update word after review
+       * @param {string} wordId - Word ID
+       * @param {number} rating - Performance rating (1-4)
+       * @returns {Object} Result with success flag
+       */
+      recordReview(wordId, rating) {
+        const word = DataManager.getWordById(wordId);
+        if (!word) {
+          return {
+            success: false,
+            error: 'Word not found'
+          };
+        }
+        
+        // Calculate next review
+        const updates = this.calculateNextReview(word, rating);
+        
+        // Update word in storage
+        return DataManager.updateWord(wordId, updates);
+      },
+      
+      /**
+       * Get study statistics
+       * @param {WordEntry[]} words - All words
+       * @returns {Object} Statistics
+       */
+      getStatistics(words) {
+        const now = Date.now();
+        const dueWords = this.getDueWords(words);
+        
+        const stats = {
+          total: words.length,
+          new: words.filter(w => !w.lastReviewed).length,
+          learning: words.filter(w => w.lastReviewed && w.masteryLevel < 80).length,
+          mastered: words.filter(w => w.masteryLevel >= 80).length,
+          due: dueWords.length,
+          averageMastery: words.length > 0 
+            ? Math.round(words.reduce((sum, w) => sum + w.masteryLevel, 0) / words.length)
+            : 0
+        };
+        
+        return stats;
+      }
+    };
+    
+    /**
+     * NavigationManager Module
+     * Handles navigation and active state management
+     */
+    const NavigationManager = {
+      currentView: 'home',
+      navLinks: null,
+      mobileMenuToggle: null,
+      mobileNav: null,
+      
+      /**
+       * Initialize navigation
+       */
+      init() {
+        this.navLinks = document.querySelectorAll('.nav-link');
+        this.mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        this.mobileNav = document.getElementById('app-nav');
+        
+        // Add click handlers to nav links
+        this.navLinks.forEach(link => {
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const view = link.getAttribute('data-view');
+            this.navigateTo(view);
+            this.closeMobileMenu();
+          });
+        });
+        
+        // Mobile menu toggle
+        if (this.mobileMenuToggle) {
+          this.mobileMenuToggle.addEventListener('click', () => {
+            this.toggleMobileMenu();
+          });
+        }
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+          if (this.mobileNav && 
+              !this.mobileNav.contains(e.target) && 
+              !this.mobileMenuToggle.contains(e.target) &&
+              this.mobileNav.classList.contains('mobile-open')) {
+            this.closeMobileMenu();
+          }
+        });
+      },
+      
+      /**
+       * Navigate to a view
+       * @param {string} view - View name
+       */
+      navigateTo(view) {
+        this.currentView = view;
+        this.updateActiveState(view);
+        
+        // Trigger view change event
+        const event = new CustomEvent('viewchange', { detail: { view } });
+        document.dispatchEvent(event);
+      },
+      
+      /**
+       * Update active state of nav links
+       * @param {string} view - Current view
+       */
+      updateActiveState(view) {
+        this.navLinks.forEach(link => {
+          if (link.getAttribute('data-view') === view) {
+            link.classList.add('active');
+          } else {
+            link.classList.remove('active');
+          }
+        });
+      },
+      
+      /**
+       * Toggle mobile menu
+       */
+      toggleMobileMenu() {
+        if (this.mobileNav) {
+          this.mobileNav.classList.toggle('mobile-open');
+          
+          // Update icon
+          const icon = this.mobileMenuToggle.querySelector('i');
+          if (this.mobileNav.classList.contains('mobile-open')) {
+            icon.classList.remove('fa-bars');
+            icon.classList.add('fa-times');
+          } else {
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+          }
+        }
+      },
+      
+      /**
+       * Close mobile menu
+       */
+      closeMobileMenu() {
+        if (this.mobileNav && this.mobileNav.classList.contains('mobile-open')) {
+          this.mobileNav.classList.remove('mobile-open');
+          const icon = this.mobileMenuToggle.querySelector('i');
+          icon.classList.remove('fa-times');
+          icon.classList.add('fa-bars');
+        }
+      }
+    };
+    
+    // Application initialization
+    console.log('Vocabulary Memory App initialized');
+    console.log('Run TestRunner.runAll() to execute tests');
+    
+    // Initialize modules when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        UIManager.init();
+        NavigationManager.init();
+        UIManager.renderView('home');
+      });
+    } else {
+      UIManager.init();
+      NavigationManager.init();
+      UIManager.renderView('home');
+    }
+  </script>
+</body>
+</html>
