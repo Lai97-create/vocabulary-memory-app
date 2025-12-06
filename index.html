@@ -6,10 +6,10 @@
   <meta name="description" content="Vocabulary Memory App - Learn and memorize vocabulary through interactive flashcards, quizzes, and spaced repetition">
   <title>Vocabulary Memory App</title>
   
-  <!-- Font Awesome CDN for icons - 使用国内CDN -->
+  <!-- Font Awesome CDN for icons - 浣跨敤鍥藉唴CDN -->
   <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- SheetJS library for Excel file parsing - 使用国内CDN -->
+  <!-- SheetJS library for Excel file parsing - 浣跨敤鍥藉唴CDN -->
   <script src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   
   <style>
@@ -1509,7 +1509,7 @@
        */
       mapExcelDataToWords(data) {
         if (data.length < 2) {
-          throw new Error('Excel文件必须包含至少一行标题和一行数据');
+          throw new Error('Excel鏂囦欢蹇呴』鍖呭惈鑷冲皯涓€琛屾爣棰樺拰涓€琛屾暟鎹?);
         }
         
         // First row is header
@@ -1517,30 +1517,30 @@
         
         // Find column indices with more flexible matching
         const wordIndex = this.findColumnIndex(headers, [
-          'word', 'words', '单词', '词汇', '词', 'vocabulary', 'term'
+          'word', 'words', '鍗曡瘝', '璇嶆眹', '璇?, 'vocabulary', 'term'
         ]);
         const definitionIndex = this.findColumnIndex(headers, [
-          'definition', 'meaning', '定义', '释义', '意思', '解释', 'def', 'translation'
+          'definition', 'meaning', '瀹氫箟', '閲婁箟', '鎰忔€?, '瑙ｉ噴', 'def', 'translation'
         ]);
         const exampleIndex = this.findColumnIndex(headers, [
-          'example', 'sentence', '例句', '示例', '例子', 'usage'
+          'example', 'sentence', '渚嬪彞', '绀轰緥', '渚嬪瓙', 'usage'
         ]);
         const notesIndex = this.findColumnIndex(headers, [
-          'notes', 'note', '备注', '笔记', 'remark', 'comment'
+          'notes', 'note', '澶囨敞', '绗旇', 'remark', 'comment'
         ]);
         
         // Provide helpful error messages
         if (wordIndex === -1) {
           throw new Error(
-            `找不到"单词"列。Excel文件的第一行应包含列名，如：Word、单词、词汇等。\n` +
-            `当前列名：${headers.join(', ')}`
+            `鎵句笉鍒?鍗曡瘝"鍒椼€侲xcel鏂囦欢鐨勭涓€琛屽簲鍖呭惈鍒楀悕锛屽锛歐ord銆佸崟璇嶃€佽瘝姹囩瓑銆俓n` +
+            `褰撳墠鍒楀悕锛?{headers.join(', ')}`
           );
         }
         
         if (definitionIndex === -1) {
           throw new Error(
-            `找不到"定义"列。Excel文件的第一行应包含列名，如：Definition、定义、释义等。\n` +
-            `当前列名：${headers.join(', ')}`
+            `鎵句笉鍒?瀹氫箟"鍒椼€侲xcel鏂囦欢鐨勭涓€琛屽簲鍖呭惈鍒楀悕锛屽锛欴efinition銆佸畾涔夈€侀噴涔夌瓑銆俓n` +
+            `褰撳墠鍒楀悕锛?{headers.join(', ')}`
           );
         }
         
@@ -1668,23 +1668,23 @@
        * Run all tests
        */
       async runAll() {
-        console.log('🧪 Running tests...\n');
+        console.log('馃И Running tests...\n');
         this.results = { passed: 0, failed: 0, total: 0 };
         
         for (const test of this.tests) {
           try {
             await test.fn();
             this.results.passed++;
-            console.log(`✅ ${test.name}`);
+            console.log(`鉁?${test.name}`);
           } catch (error) {
             this.results.failed++;
-            console.error(`❌ ${test.name}`);
+            console.error(`鉂?${test.name}`);
             console.error(`   ${error.message}`);
           }
           this.results.total++;
         }
         
-        console.log(`\n📊 Results: ${this.results.passed}/${this.results.total} passed`);
+        console.log(`\n馃搳 Results: ${this.results.passed}/${this.results.total} passed`);
         return this.results;
       },
       
@@ -1796,10 +1796,10 @@
     // Test: Excel column mapping
     TestRunner.test('ExcelImporter: Find column index', () => {
       const headers = ['word', 'definition', 'example'];
-      const index = ExcelImporter.findColumnIndex(headers, ['word', '单词']);
+      const index = ExcelImporter.findColumnIndex(headers, ['word', '鍗曡瘝']);
       TestRunner.assertEqual(index, 0, 'Should find word column');
       
-      const defIndex = ExcelImporter.findColumnIndex(headers, ['definition', '定义']);
+      const defIndex = ExcelImporter.findColumnIndex(headers, ['definition', '瀹氫箟']);
       TestRunner.assertEqual(defIndex, 1, 'Should find definition column');
     });
     
@@ -2162,68 +2162,68 @@
         this.mainContent.innerHTML = `
           <div class="home-view">
             <div class="welcome-section">
-              <h1 class="welcome-title">欢迎使用词汇记忆应用</h1>
-              <p class="welcome-subtitle">通过科学的间隔重复算法，高效记忆词汇</p>
+              <h1 class="welcome-title">娆㈣繋浣跨敤璇嶆眹璁板繂搴旂敤</h1>
+              <p class="welcome-subtitle">閫氳繃绉戝鐨勯棿闅旈噸澶嶇畻娉曪紝楂樻晥璁板繂璇嶆眹</p>
             </div>
             
             <div class="stats-grid">
               <div class="stat-card">
                 <i class="fas fa-book stat-icon"></i>
                 <div class="stat-value">${totalWords}</div>
-                <div class="stat-label">总词汇量</div>
+                <div class="stat-label">鎬昏瘝姹囬噺</div>
               </div>
               <div class="stat-card">
                 <i class="fas fa-clock stat-icon" style="color: var(--warning-color);"></i>
                 <div class="stat-value">${dueWords}</div>
-                <div class="stat-label">待复习</div>
+                <div class="stat-label">寰呭涔?/div>
               </div>
               <div class="stat-card">
                 <i class="fas fa-star stat-icon" style="color: var(--secondary-color);"></i>
                 <div class="stat-value">${masteredWords}</div>
-                <div class="stat-label">已掌握</div>
+                <div class="stat-label">宸叉帉鎻?/div>
               </div>
             </div>
             
             <div class="actions-section">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
-                <h2 class="section-title" style="margin-bottom: 0;">快速开始</h2>
+                <h2 class="section-title" style="margin-bottom: 0;">蹇€熷紑濮?/h2>
                 <button class="btn btn-secondary" id="show-excel-help-btn" style="padding: var(--spacing-xs) var(--spacing-md);">
                   <i class="fas fa-question-circle"></i>
-                  Excel格式说明
+                  Excel鏍煎紡璇存槑
                 </button>
               </div>
               <div class="action-buttons">
                 <div class="action-card" id="import-excel-card">
                   <i class="fas fa-file-excel action-icon" style="color: var(--secondary-color);"></i>
-                  <h3 class="action-title">导入Excel</h3>
-                  <p class="action-description">从Excel文件导入词汇列表<br>
-                  <small style="color: var(--text-light);">需要包含：Word（单词）、Definition（定义）列</small></p>
+                  <h3 class="action-title">瀵煎叆Excel</h3>
+                  <p class="action-description">浠嶦xcel鏂囦欢瀵煎叆璇嶆眹鍒楄〃<br>
+                  <small style="color: var(--text-light);">闇€瑕佸寘鍚細Word锛堝崟璇嶏級銆丏efinition锛堝畾涔夛級鍒?/small></p>
                   <input type="file" id="excel-file-input" class="file-input" accept=".xlsx,.xls">
                 </div>
                 
                 <div class="action-card" id="start-flashcard-card" ${totalWords === 0 ? 'style="opacity: 0.5; cursor: not-allowed;"' : ''}>
                   <i class="fas fa-layer-group action-icon" style="color: var(--info-color);"></i>
-                  <h3 class="action-title">开始闪卡</h3>
-                  <p class="action-description">通过闪卡模式学习词汇</p>
+                  <h3 class="action-title">寮€濮嬮棯鍗?/h3>
+                  <p class="action-description">閫氳繃闂崱妯″紡瀛︿範璇嶆眹</p>
                 </div>
                 
                 <div class="action-card" id="start-quiz-card" ${totalWords === 0 ? 'style="opacity: 0.5; cursor: not-allowed;"' : ''}>
                   <i class="fas fa-question-circle action-icon" style="color: var(--primary-color);"></i>
-                  <h3 class="action-title">开始测验</h3>
-                  <p class="action-description">通过测验检验学习成果</p>
+                  <h3 class="action-title">寮€濮嬫祴楠?/h3>
+                  <p class="action-description">閫氳繃娴嬮獙妫€楠屽涔犳垚鏋?/p>
                 </div>
               </div>
             </div>
             
             ${dueWords > 0 ? `
               <div class="actions-section">
-                <h2 class="section-title">今日任务</h2>
+                <h2 class="section-title">浠婃棩浠诲姟</h2>
                 <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
-                  你有 <strong style="color: var(--warning-color);">${dueWords}</strong> 个词汇需要复习
+                  浣犳湁 <strong style="color: var(--warning-color);">${dueWords}</strong> 涓瘝姹囬渶瑕佸涔?
                 </p>
                 <button class="btn btn-primary" id="review-now-btn">
                   <i class="fas fa-play"></i>
-                  立即复习
+                  绔嬪嵆澶嶄範
                 </button>
               </div>
             ` : ''}
@@ -2263,7 +2263,7 @@
             const words = DataManager.getWords();
             if (words.length > 0) {
               NavigationManager.navigateTo('study');
-              this.showToast('闪卡模式即将推出', 'info');
+              this.showToast('闂崱妯″紡鍗冲皢鎺ㄥ嚭', 'info');
             }
           });
         }
@@ -2274,7 +2274,7 @@
           quizCard.addEventListener('click', () => {
             const words = DataManager.getWords();
             if (words.length > 0) {
-              this.showToast('测验模式即将推出', 'info');
+              this.showToast('娴嬮獙妯″紡鍗冲皢鎺ㄥ嚭', 'info');
             }
           });
         }
@@ -2284,7 +2284,7 @@
         if (reviewBtn) {
           reviewBtn.addEventListener('click', () => {
             NavigationManager.navigateTo('study');
-            this.showToast('复习模式即将推出', 'info');
+            this.showToast('澶嶄範妯″紡鍗冲皢鎺ㄥ嚭', 'info');
           });
         }
         
@@ -2303,21 +2303,21 @@
       showExcelFormatHelp() {
         const helpContent = `
           <div style="line-height: 1.8;">
-            <p style="margin-bottom: var(--spacing-md);">Excel文件的第一行应该是列名（标题行），后续行是数据。</p>
+            <p style="margin-bottom: var(--spacing-md);">Excel鏂囦欢鐨勭涓€琛屽簲璇ユ槸鍒楀悕锛堟爣棰樿锛夛紝鍚庣画琛屾槸鏁版嵁銆?/p>
             
-            <h3 style="margin-bottom: var(--spacing-sm); color: var(--primary-color);">必需列：</h3>
+            <h3 style="margin-bottom: var(--spacing-sm); color: var(--primary-color);">蹇呴渶鍒楋細</h3>
             <ul style="margin-bottom: var(--spacing-md); padding-left: var(--spacing-lg);">
-              <li><strong>Word</strong>（或：单词、词汇、词）- 要学习的单词</li>
-              <li><strong>Definition</strong>（或：定义、释义、意思）- 单词的定义</li>
+              <li><strong>Word</strong>锛堟垨锛氬崟璇嶃€佽瘝姹囥€佽瘝锛? 瑕佸涔犵殑鍗曡瘝</li>
+              <li><strong>Definition</strong>锛堟垨锛氬畾涔夈€侀噴涔夈€佹剰鎬濓級- 鍗曡瘝鐨勫畾涔?/li>
             </ul>
             
-            <h3 style="margin-bottom: var(--spacing-sm); color: var(--primary-color);">可选列：</h3>
+            <h3 style="margin-bottom: var(--spacing-sm); color: var(--primary-color);">鍙€夊垪锛?/h3>
             <ul style="margin-bottom: var(--spacing-md); padding-left: var(--spacing-lg);">
-              <li><strong>Example</strong>（或：例句、示例）- 使用示例</li>
-              <li><strong>Notes</strong>（或：备注、笔记）- 额外说明</li>
+              <li><strong>Example</strong>锛堟垨锛氫緥鍙ャ€佺ず渚嬶級- 浣跨敤绀轰緥</li>
+              <li><strong>Notes</strong>锛堟垨锛氬娉ㄣ€佺瑪璁帮級- 棰濆璇存槑</li>
             </ul>
             
-            <h3 style="margin-bottom: var(--spacing-sm); color: var(--primary-color);">示例格式：</h3>
+            <h3 style="margin-bottom: var(--spacing-sm); color: var(--primary-color);">绀轰緥鏍煎紡锛?/h3>
             <table style="width: 100%; border-collapse: collapse; margin-bottom: var(--spacing-md);">
               <thead>
                 <tr style="background-color: var(--bg-tertiary);">
@@ -2329,12 +2329,12 @@
               <tbody>
                 <tr>
                   <td style="padding: var(--spacing-sm); border: 1px solid var(--border-color);">hello</td>
-                  <td style="padding: var(--spacing-sm); border: 1px solid var(--border-color);">你好，问候语</td>
+                  <td style="padding: var(--spacing-sm); border: 1px solid var(--border-color);">浣犲ソ锛岄棶鍊欒</td>
                   <td style="padding: var(--spacing-sm); border: 1px solid var(--border-color);">Hello, how are you?</td>
                 </tr>
                 <tr>
                   <td style="padding: var(--spacing-sm); border: 1px solid var(--border-color);">world</td>
-                  <td style="padding: var(--spacing-sm); border: 1px solid var(--border-color);">世界</td>
+                  <td style="padding: var(--spacing-sm); border: 1px solid var(--border-color);">涓栫晫</td>
                   <td style="padding: var(--spacing-sm); border: 1px solid var(--border-color);">Welcome to the world</td>
                 </tr>
               </tbody>
@@ -2342,15 +2342,15 @@
             
             <p style="color: var(--text-secondary); font-size: var(--font-size-sm);">
               <i class="fas fa-info-circle"></i> 
-              支持中英文列名，系统会自动识别。
+              鏀寔涓嫳鏂囧垪鍚嶏紝绯荤粺浼氳嚜鍔ㄨ瘑鍒€?
             </p>
           </div>
         `;
         
         this.showModal({
-          title: 'Excel文件格式说明',
+          title: 'Excel鏂囦欢鏍煎紡璇存槑',
           content: helpContent,
-          confirmText: '知道了',
+          confirmText: '鐭ラ亾浜?,
           showCancel: false
         });
       },
@@ -2360,11 +2360,11 @@
        * @param {File} file - Excel file
        */
       async handleExcelImport(file) {
-        this.showLoading('正在导入Excel文件...');
+        this.showLoading('姝ｅ湪瀵煎叆Excel鏂囦欢...');
         
         try {
           const result = await ExcelImporter.importWords(file, (progress, message) => {
-            this.showLoading(message || `导入中... ${progress}%`);
+            this.showLoading(message || `瀵煎叆涓?.. ${progress}%`);
           });
           
           this.hideLoading();
@@ -2378,7 +2378,7 @@
           }
         } catch (error) {
           this.hideLoading();
-          this.showToast(`导入失败: ${error.message}`, 'error', 5000);
+          this.showToast(`瀵煎叆澶辫触: ${error.message}`, 'error', 5000);
         }
       },
       
@@ -2392,28 +2392,28 @@
           this.mainContent.innerHTML = `
             <div style="text-align: center; padding: var(--spacing-2xl);">
               <i class="fas fa-book-open" style="font-size: 4rem; color: var(--text-light); margin-bottom: var(--spacing-lg);"></i>
-              <h2>还没有词汇</h2>
-              <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">请先导入Excel文件添加词汇</p>
+              <h2>杩樻病鏈夎瘝姹?/h2>
+              <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">璇峰厛瀵煎叆Excel鏂囦欢娣诲姞璇嶆眹</p>
               <button class="btn btn-primary" onclick="NavigationManager.navigateTo('home')">
                 <i class="fas fa-home"></i>
-                返回主页
+                杩斿洖涓婚〉
               </button>
             </div>
           `;
           return;
         }
         
-        const studyQueue = SpacedRepetitionEngine.getStudyQueue(words, 20);
+        const studyQueue = SpacedRepetitionEngine.getStudyQueue(words, 50);
         
         if (studyQueue.length === 0) {
           this.mainContent.innerHTML = `
             <div style="text-align: center; padding: var(--spacing-2xl);">
               <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--secondary-color); margin-bottom: var(--spacing-lg);"></i>
-              <h2>太棒了！</h2>
-              <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">暂时没有需要复习的词汇</p>
+              <h2>澶浜嗭紒</h2>
+              <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">鏆傛椂娌℃湁闇€瑕佸涔犵殑璇嶆眹</p>
               <button class="btn btn-primary" onclick="NavigationManager.navigateTo('home')">
                 <i class="fas fa-home"></i>
-                返回主页
+                杩斿洖涓婚〉
               </button>
             </div>
           `;
@@ -2442,8 +2442,8 @@
               <!-- Progress -->
               <div style="margin-bottom: var(--spacing-xl);">
                 <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
-                  <span style="color: var(--text-secondary);">进度: ${progress}/${total}</span>
-                  <span style="color: var(--text-secondary);">掌握度: ${word.masteryLevel}%</span>
+                  <span style="color: var(--text-secondary);">杩涘害: ${progress}/${total}</span>
+                  <span style="color: var(--text-secondary);">鎺屾彙搴? ${word.masteryLevel}%</span>
                 </div>
                 <div style="height: 8px; background-color: var(--bg-tertiary); border-radius: var(--radius-full); overflow: hidden;">
                   <div style="height: 100%; background-color: var(--primary-color); width: ${(progress/total)*100}%; transition: width 0.3s;"></div>
@@ -2453,21 +2453,21 @@
               <!-- Card -->
               <div class="study-card" style="background-color: var(--bg-primary); border-radius: var(--radius-xl); padding: var(--spacing-2xl); box-shadow: var(--shadow-lg); min-height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; margin-bottom: var(--spacing-xl);">
                 <div class="card-front" style="display: ${showingAnswer ? 'none' : 'block'};">
-                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">单词</div>
+                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">鍗曡瘝</div>
                   <h1 style="font-size: var(--font-size-4xl); color: var(--text-primary); margin-bottom: var(--spacing-lg);">${word.word}</h1>
                   <button class="btn btn-primary btn-lg" id="show-answer-btn" style="padding: var(--spacing-md) var(--spacing-2xl); font-size: var(--font-size-lg);">
                     <i class="fas fa-eye"></i>
-                    显示答案
+                    鏄剧ず绛旀
                   </button>
                 </div>
                 
                 <div class="card-back" style="display: ${showingAnswer ? 'block' : 'none'};">
-                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-sm);">单词</div>
+                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-sm);">鍗曡瘝</div>
                   <h2 style="font-size: var(--font-size-2xl); color: var(--text-primary); margin-bottom: var(--spacing-lg);">${word.word}</h2>
-                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-sm);">定义</div>
+                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-sm);">瀹氫箟</div>
                   <p style="font-size: var(--font-size-xl); color: var(--text-primary); margin-bottom: var(--spacing-xl);">${word.definition}</p>
                   ${word.example ? `
-                    <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-sm);">例句</div>
+                    <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-sm);">渚嬪彞</div>
                     <p style="font-size: var(--font-size-base); color: var(--text-secondary); font-style: italic;">${word.example}</p>
                   ` : ''}
                 </div>
@@ -2477,40 +2477,40 @@
               <div id="rating-buttons" style="display: ${showingAnswer ? 'grid' : 'none'}; grid-template-columns: repeat(4, 1fr); gap: var(--spacing-md);">
                 <button class="btn rating-btn" data-rating="1" data-key="1" style="background-color: var(--danger-color); color: white; padding: var(--spacing-lg); flex-direction: column;">
                   <i class="fas fa-times-circle" style="font-size: var(--font-size-2xl); margin-bottom: var(--spacing-sm);"></i>
-                  <span>再来</span>
-                  <small style="opacity: 0.8; font-size: var(--font-size-xs);">&lt;1分钟</small>
-                  <small style="opacity: 0.6; font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">按 1</small>
+                  <span>鍐嶆潵</span>
+                  <small style="opacity: 0.8; font-size: var(--font-size-xs);">&lt;1鍒嗛挓</small>
+                  <small style="opacity: 0.6; font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">鎸?1</small>
                 </button>
                 <button class="btn rating-btn" data-rating="2" data-key="2" style="background-color: var(--warning-color); color: white; padding: var(--spacing-lg); flex-direction: column;">
                   <i class="fas fa-frown" style="font-size: var(--font-size-2xl); margin-bottom: var(--spacing-sm);"></i>
-                  <span>困难</span>
+                  <span>鍥伴毦</span>
                   <small style="opacity: 0.8; font-size: var(--font-size-xs);">&lt;${this.formatInterval(word, 1.2)}</small>
-                  <small style="opacity: 0.6; font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">按 2</small>
+                  <small style="opacity: 0.6; font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">鎸?2</small>
                 </button>
                 <button class="btn rating-btn" data-rating="3" data-key="3" style="background-color: var(--secondary-color); color: white; padding: var(--spacing-lg); flex-direction: column;">
                   <i class="fas fa-smile" style="font-size: var(--font-size-2xl); margin-bottom: var(--spacing-sm);"></i>
-                  <span>良好</span>
+                  <span>鑹ソ</span>
                   <small style="opacity: 0.8; font-size: var(--font-size-xs);">&lt;${this.formatInterval(word, 2.5)}</small>
-                  <small style="opacity: 0.6; font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">按 3</small>
+                  <small style="opacity: 0.6; font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">鎸?3</small>
                 </button>
                 <button class="btn rating-btn" data-rating="4" data-key="4" style="background-color: var(--info-color); color: white; padding: var(--spacing-lg); flex-direction: column;">
                   <i class="fas fa-laugh-beam" style="font-size: var(--font-size-2xl); margin-bottom: var(--spacing-sm);"></i>
-                  <span>简单</span>
+                  <span>绠€鍗?/span>
                   <small style="opacity: 0.8; font-size: var(--font-size-xs);">&lt;${this.formatInterval(word, 3.5)}</small>
-                  <small style="opacity: 0.6; font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">按 4</small>
+                  <small style="opacity: 0.6; font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">鎸?4</small>
                 </button>
               </div>
               
               <!-- Keyboard Shortcuts Hint -->
               <div style="text-align: center; margin-top: var(--spacing-md); color: var(--text-light); font-size: var(--font-size-sm);">
-                ${!showingAnswer ? '💡 按 <strong>空格</strong> 显示答案' : '💡 按 <strong>1-4</strong> 快速评分'}
+                ${!showingAnswer ? '馃挕 鎸?<strong>绌烘牸</strong> 鏄剧ず绛旀' : '馃挕 鎸?<strong>1-4</strong> 蹇€熻瘎鍒?}
               </div>
               
               <!-- Navigation -->
               <div style="text-align: center; margin-top: var(--spacing-xl);">
                 <button class="btn btn-secondary" onclick="NavigationManager.navigateTo('home')">
                   <i class="fas fa-times"></i>
-                  结束学习
+                  缁撴潫瀛︿範
                 </button>
               </div>
             </div>
@@ -2589,15 +2589,15 @@
         const days = SpacedRepetitionEngine.calculateInterval(word, factor);
         
         if (days < 0.01) {
-          return '1分钟';
+          return '1鍒嗛挓';
         } else if (days < 1) {
           const hours = Math.round(days * 24);
-          return `${hours}小时`;
+          return `${hours}灏忔椂`;
         } else if (days < 30) {
-          return `${Math.round(days)}天`;
+          return `${Math.round(days)}澶ー;
         } else {
           const months = Math.round(days / 30);
-          return `${months}个月`;
+          return `${months}涓湀`;
         }
       },
       
@@ -2611,8 +2611,8 @@
         const result = SpacedRepetitionEngine.recordReview(wordId, rating);
         
         if (result.success) {
-          const ratingText = ['', '再来', '困难', '良好', '简单'][rating];
-          this.showToast(`已记录: ${ratingText}`, 'success', 1000);
+          const ratingText = ['', '鍐嶆潵', '鍥伴毦', '鑹ソ', '绠€鍗?][rating];
+          this.showToast(`宸茶褰? ${ratingText}`, 'success', 1000);
           callback();
         } else {
           this.showToast(result.error, 'error');
@@ -2632,19 +2632,19 @@
         let achievementColor = 'var(--warning-color)';
         
         if (count >= 50) {
-          achievement = '学习大师！';
+          achievement = '瀛︿範澶у笀锛?;
           achievementIcon = 'fa-crown';
           achievementColor = 'var(--warning-color)';
         } else if (count >= 20) {
-          achievement = '学习达人！';
+          achievement = '瀛︿範杈句汉锛?;
           achievementIcon = 'fa-medal';
           achievementColor = 'var(--warning-color)';
         } else if (count >= 10) {
-          achievement = '坚持不懈！';
+          achievement = '鍧氭寔涓嶆噲锛?;
           achievementIcon = 'fa-star';
           achievementColor = 'var(--secondary-color)';
         } else {
-          achievement = '很棒的开始！';
+          achievement = '寰堟鐨勫紑濮嬶紒';
           achievementIcon = 'fa-thumbs-up';
           achievementColor = 'var(--info-color)';
         }
@@ -2656,21 +2656,21 @@
             </div>
             <h1 style="margin-bottom: var(--spacing-sm);">${achievement}</h1>
             <p style="font-size: var(--font-size-xl); color: var(--text-secondary); margin-bottom: var(--spacing-2xl);">
-              你已完成 <strong style="color: var(--primary-color);">${count}</strong> 个词汇的学习
+              浣犲凡瀹屾垚 <strong style="color: var(--primary-color);">${count}</strong> 涓瘝姹囩殑瀛︿範
             </p>
             
             <div class="stats-grid" style="margin-bottom: var(--spacing-2xl);">
               <div class="stat-card">
                 <div class="stat-value">${stats.due}</div>
-                <div class="stat-label">待复习</div>
+                <div class="stat-label">寰呭涔?/div>
               </div>
               <div class="stat-card">
                 <div class="stat-value">${stats.mastered}</div>
-                <div class="stat-label">已掌握</div>
+                <div class="stat-label">宸叉帉鎻?/div>
               </div>
               <div class="stat-card">
                 <div class="stat-value">${stats.averageMastery}%</div>
-                <div class="stat-label">平均掌握度</div>
+                <div class="stat-label">骞冲潎鎺屾彙搴?/div>
               </div>
             </div>
             
@@ -2678,14 +2678,14 @@
               <div style="background-color: var(--bg-secondary); padding: var(--spacing-lg); border-radius: var(--radius-lg); margin-bottom: var(--spacing-lg);">
                 <p style="color: var(--text-secondary);">
                   <i class="fas fa-info-circle"></i>
-                  还有 <strong style="color: var(--primary-color);">${stats.due}</strong> 个词汇等待复习
+                  杩樻湁 <strong style="color: var(--primary-color);">${stats.due}</strong> 涓瘝姹囩瓑寰呭涔?
                 </p>
               </div>
             ` : `
               <div style="background-color: var(--bg-secondary); padding: var(--spacing-lg); border-radius: var(--radius-lg); margin-bottom: var(--spacing-lg);">
                 <p style="color: var(--secondary-color);">
                   <i class="fas fa-check-circle"></i>
-                  所有词汇都已复习完毕！
+                  鎵€鏈夎瘝姹囬兘宸插涔犲畬姣曪紒
                 </p>
               </div>
             `}
@@ -2694,12 +2694,12 @@
               ${stats.due > 0 ? `
                 <button class="btn btn-primary" onclick="UIManager.renderStudyView()">
                   <i class="fas fa-redo"></i>
-                  继续学习
+                  缁х画瀛︿範
                 </button>
               ` : ''}
               <button class="btn btn-secondary" onclick="NavigationManager.navigateTo('home')">
                 <i class="fas fa-home"></i>
-                返回主页
+                杩斿洖涓婚〉
               </button>
             </div>
           </div>
@@ -2717,11 +2717,11 @@
           this.mainContent.innerHTML = `
             <div style="text-align: center; padding: var(--spacing-2xl);">
               <i class="fas fa-chart-line" style="font-size: 4rem; color: var(--text-light); margin-bottom: var(--spacing-lg);"></i>
-              <h2>还没有学习数据</h2>
-              <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">开始学习后，这里会显示你的进度</p>
+              <h2>杩樻病鏈夊涔犳暟鎹?/h2>
+              <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">寮€濮嬪涔犲悗锛岃繖閲屼細鏄剧ず浣犵殑杩涘害</p>
               <button class="btn btn-primary" onclick="NavigationManager.navigateTo('home')">
                 <i class="fas fa-home"></i>
-                返回主页
+                杩斿洖涓婚〉
               </button>
             </div>
           `;
@@ -2744,40 +2744,40 @@
         
         this.mainContent.innerHTML = `
           <div style="max-width: 900px; margin: 0 auto;">
-            <h1 style="margin-bottom: var(--spacing-xl);">学习进度</h1>
+            <h1 style="margin-bottom: var(--spacing-xl);">瀛︿範杩涘害</h1>
             
             <!-- Overall Stats -->
             <div class="stats-grid" style="margin-bottom: var(--spacing-2xl);">
               <div class="stat-card">
                 <i class="fas fa-book stat-icon"></i>
                 <div class="stat-value">${stats.total}</div>
-                <div class="stat-label">总词汇量</div>
+                <div class="stat-label">鎬昏瘝姹囬噺</div>
               </div>
               <div class="stat-card">
                 <i class="fas fa-redo stat-icon" style="color: var(--info-color);"></i>
                 <div class="stat-value">${totalReviews}</div>
-                <div class="stat-label">总复习次数</div>
+                <div class="stat-label">鎬诲涔犳鏁?/div>
               </div>
               <div class="stat-card">
                 <i class="fas fa-chart-line stat-icon" style="color: var(--secondary-color);"></i>
                 <div class="stat-value">${stats.averageMastery}%</div>
-                <div class="stat-label">平均掌握度</div>
+                <div class="stat-label">骞冲潎鎺屾彙搴?/div>
               </div>
               <div class="stat-card">
                 <i class="fas fa-bullseye stat-icon" style="color: var(--warning-color);"></i>
                 <div class="stat-value">${accuracy}%</div>
-                <div class="stat-label">正确率</div>
+                <div class="stat-label">姝ｇ‘鐜?/div>
               </div>
             </div>
             
             <!-- Mastery Distribution -->
             <div style="background-color: var(--bg-primary); border-radius: var(--radius-xl); padding: var(--spacing-xl); box-shadow: var(--shadow-md); margin-bottom: var(--spacing-xl);">
-              <h2 style="margin-bottom: var(--spacing-lg);">掌握度分布</h2>
+              <h2 style="margin-bottom: var(--spacing-lg);">鎺屾彙搴﹀垎甯?/h2>
               
               <div style="margin-bottom: var(--spacing-lg);">
                 <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
-                  <span>初学 (0-30%)</span>
-                  <strong>${masteryGroups.beginner} 词</strong>
+                  <span>鍒濆 (0-30%)</span>
+                  <strong>${masteryGroups.beginner} 璇?/strong>
                 </div>
                 <div style="height: 12px; background-color: var(--bg-tertiary); border-radius: var(--radius-full); overflow: hidden;">
                   <div style="height: 100%; background-color: var(--danger-color); width: ${(masteryGroups.beginner/stats.total)*100}%; transition: width 0.3s;"></div>
@@ -2786,8 +2786,8 @@
               
               <div style="margin-bottom: var(--spacing-lg);">
                 <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
-                  <span>学习中 (30-60%)</span>
-                  <strong>${masteryGroups.learning} 词</strong>
+                  <span>瀛︿範涓?(30-60%)</span>
+                  <strong>${masteryGroups.learning} 璇?/strong>
                 </div>
                 <div style="height: 12px; background-color: var(--bg-tertiary); border-radius: var(--radius-full); overflow: hidden;">
                   <div style="height: 100%; background-color: var(--warning-color); width: ${(masteryGroups.learning/stats.total)*100}%; transition: width 0.3s;"></div>
@@ -2796,8 +2796,8 @@
               
               <div style="margin-bottom: var(--spacing-lg);">
                 <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
-                  <span>熟悉 (60-80%)</span>
-                  <strong>${masteryGroups.familiar} 词</strong>
+                  <span>鐔熸倝 (60-80%)</span>
+                  <strong>${masteryGroups.familiar} 璇?/strong>
                 </div>
                 <div style="height: 12px; background-color: var(--bg-tertiary); border-radius: var(--radius-full); overflow: hidden;">
                   <div style="height: 100%; background-color: var(--info-color); width: ${(masteryGroups.familiar/stats.total)*100}%; transition: width 0.3s;"></div>
@@ -2806,8 +2806,8 @@
               
               <div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
-                  <span>已掌握 (80-100%)</span>
-                  <strong>${masteryGroups.mastered} 词</strong>
+                  <span>宸叉帉鎻?(80-100%)</span>
+                  <strong>${masteryGroups.mastered} 璇?/strong>
                 </div>
                 <div style="height: 12px; background-color: var(--bg-tertiary); border-radius: var(--radius-full); overflow: hidden;">
                   <div style="height: 100%; background-color: var(--secondary-color); width: ${(masteryGroups.mastered/stats.total)*100}%; transition: width 0.3s;"></div>
@@ -2817,26 +2817,26 @@
             
             <!-- Study Status -->
             <div style="background-color: var(--bg-primary); border-radius: var(--radius-xl); padding: var(--spacing-xl); box-shadow: var(--shadow-md);">
-              <h2 style="margin-bottom: var(--spacing-lg);">学习状态</h2>
+              <h2 style="margin-bottom: var(--spacing-lg);">瀛︿範鐘舵€?/h2>
               
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-md);">
                 <div style="padding: var(--spacing-md); background-color: var(--bg-secondary); border-radius: var(--radius-md);">
-                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-xs);">新词汇</div>
+                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-xs);">鏂拌瘝姹?/div>
                   <div style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--info-color);">${stats.new}</div>
                 </div>
                 
                 <div style="padding: var(--spacing-md); background-color: var(--bg-secondary); border-radius: var(--radius-md);">
-                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-xs);">学习中</div>
+                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-xs);">瀛︿範涓?/div>
                   <div style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--warning-color);">${stats.learning}</div>
                 </div>
                 
                 <div style="padding: var(--spacing-md); background-color: var(--bg-secondary); border-radius: var(--radius-md);">
-                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-xs);">待复习</div>
+                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-xs);">寰呭涔?/div>
                   <div style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--danger-color);">${stats.due}</div>
                 </div>
                 
                 <div style="padding: var(--spacing-md); background-color: var(--bg-secondary); border-radius: var(--radius-md);">
-                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-xs);">已掌握</div>
+                  <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-xs);">宸叉帉鎻?/div>
                   <div style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); color: var(--secondary-color);">${stats.mastered}</div>
                 </div>
               </div>
@@ -2854,21 +2854,21 @@
         
         this.mainContent.innerHTML = `
           <div style="max-width: 700px; margin: 0 auto;">
-            <h1 style="margin-bottom: var(--spacing-xl);">设置</h1>
+            <h1 style="margin-bottom: var(--spacing-xl);">璁剧疆</h1>
             
             <!-- Data Management -->
             <div style="background-color: var(--bg-primary); border-radius: var(--radius-xl); padding: var(--spacing-xl); box-shadow: var(--shadow-md); margin-bottom: var(--spacing-xl);">
-              <h2 style="margin-bottom: var(--spacing-lg);">数据管理</h2>
+              <h2 style="margin-bottom: var(--spacing-lg);">鏁版嵁绠＄悊</h2>
               
               <div style="margin-bottom: var(--spacing-lg);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
                   <div>
-                    <div style="font-weight: var(--font-weight-semibold); margin-bottom: var(--spacing-xs);">导出数据</div>
-                    <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">将所有词汇和学习进度导出为JSON文件</div>
+                    <div style="font-weight: var(--font-weight-semibold); margin-bottom: var(--spacing-xs);">瀵煎嚭鏁版嵁</div>
+                    <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">灏嗘墍鏈夎瘝姹囧拰瀛︿範杩涘害瀵煎嚭涓篔SON鏂囦欢</div>
                   </div>
                   <button class="btn btn-primary" id="export-data-btn">
                     <i class="fas fa-download"></i>
-                    导出
+                    瀵煎嚭
                   </button>
                 </div>
               </div>
@@ -2876,12 +2876,12 @@
               <div style="margin-bottom: var(--spacing-lg); padding-top: var(--spacing-lg); border-top: 1px solid var(--border-color);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md);">
                   <div>
-                    <div style="font-weight: var(--font-weight-semibold); margin-bottom: var(--spacing-xs);">清除所有数据</div>
-                    <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">删除所有词汇和学习记录（不可恢复）</div>
+                    <div style="font-weight: var(--font-weight-semibold); margin-bottom: var(--spacing-xs);">娓呴櫎鎵€鏈夋暟鎹?/div>
+                    <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">鍒犻櫎鎵€鏈夎瘝姹囧拰瀛︿範璁板綍锛堜笉鍙仮澶嶏級</div>
                   </div>
                   <button class="btn btn-danger" id="clear-data-btn">
                     <i class="fas fa-trash"></i>
-                    清除
+                    娓呴櫎
                   </button>
                 </div>
               </div>
@@ -2890,11 +2890,11 @@
                 <div style="font-size: var(--font-size-sm); color: var(--text-secondary);">
                   <div style="margin-bottom: var(--spacing-xs);">
                     <i class="fas fa-database"></i>
-                    存储使用: ${storageInfo.totalSizeKB} KB / ${storageInfo.storageLimitMB} MB (${storageInfo.usagePercent}%)
+                    瀛樺偍浣跨敤: ${storageInfo.totalSizeKB} KB / ${storageInfo.storageLimitMB} MB (${storageInfo.usagePercent}%)
                   </div>
                   <div>
                     <i class="fas fa-book"></i>
-                    词汇数量: ${words.length}
+                    璇嶆眹鏁伴噺: ${words.length}
                   </div>
                 </div>
               </div>
@@ -2902,13 +2902,13 @@
             
             <!-- About -->
             <div style="background-color: var(--bg-primary); border-radius: var(--radius-xl); padding: var(--spacing-xl); box-shadow: var(--shadow-md);">
-              <h2 style="margin-bottom: var(--spacing-lg);">关于</h2>
+              <h2 style="margin-bottom: var(--spacing-lg);">鍏充簬</h2>
               <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
-                词汇记忆应用使用科学的间隔重复算法（SM-2），帮助你高效记忆词汇。
+                璇嶆眹璁板繂搴旂敤浣跨敤绉戝鐨勯棿闅旈噸澶嶇畻娉曪紙SM-2锛夛紝甯姪浣犻珮鏁堣蹇嗚瘝姹囥€?
               </p>
               <div style="font-size: var(--font-size-sm); color: var(--text-light);">
-                <div>版本: 1.0.0</div>
-                <div>算法: SM-2 简化版</div>
+                <div>鐗堟湰: 1.0.0</div>
+                <div>绠楁硶: SM-2 绠€鍖栫増</div>
               </div>
             </div>
           </div>
@@ -2935,16 +2935,16 @@
         if (clearBtn) {
           clearBtn.addEventListener('click', async () => {
             const confirmed = await this.showModal({
-              title: '确认清除数据',
-              content: '<p style="color: var(--danger-color); margin-bottom: var(--spacing-md);"><i class="fas fa-exclamation-triangle"></i> <strong>警告：此操作不可恢复！</strong></p><p>确定要删除所有词汇和学习记录吗？</p>',
-              confirmText: '确认清除',
-              cancelText: '取消'
+              title: '纭娓呴櫎鏁版嵁',
+              content: '<p style="color: var(--danger-color); margin-bottom: var(--spacing-md);"><i class="fas fa-exclamation-triangle"></i> <strong>璀﹀憡锛氭鎿嶄綔涓嶅彲鎭㈠锛?/strong></p><p>纭畾瑕佸垹闄ゆ墍鏈夎瘝姹囧拰瀛︿範璁板綍鍚楋紵</p>',
+              confirmText: '纭娓呴櫎',
+              cancelText: '鍙栨秷'
             });
             
             if (confirmed) {
               const result = DataManager.clearAll();
               if (result.success) {
-                this.showToast('所有数据已清除', 'success');
+                this.showToast('鎵€鏈夋暟鎹凡娓呴櫎', 'success');
                 this.renderSettingsView();
               } else {
                 this.showToast(result.error, 'error');
@@ -2961,7 +2961,7 @@
         const words = DataManager.getWords();
         
         if (words.length === 0) {
-          this.showToast('没有数据可导出', 'warning');
+          this.showToast('娌℃湁鏁版嵁鍙鍑?, 'warning');
           return;
         }
         
@@ -2983,7 +2983,7 @@
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         
-        this.showToast('数据导出成功', 'success');
+        this.showToast('鏁版嵁瀵煎嚭鎴愬姛', 'success');
       }
     };
     
@@ -2994,10 +2994,10 @@
     const SpacedRepetitionEngine = {
       // Performance ratings
       RATING: {
-        AGAIN: 1,    // 完全不记得
-        HARD: 2,     // 困难
-        GOOD: 3,     // 良好
-        EASY: 4      // 简单
+        AGAIN: 1,    // 瀹屽叏涓嶈寰?
+        HARD: 2,     // 鍥伴毦
+        GOOD: 3,     // 鑹ソ
+        EASY: 4      // 绠€鍗?
       },
       
       // Minimum interval in milliseconds (1 minute for testing, normally 1 day)
@@ -3156,40 +3156,52 @@
       
       /**
        * Get prioritized study queue
-       * Prioritizes: 1) Due words with lower mastery, 2) New words, 3) Due words
+       * Prioritizes: 1) New words (mix in), 2) Due words with lower mastery, 3) Overdue words
        * @param {WordEntry[]} words - All words
        * @param {number} limit - Maximum number of words
        * @returns {WordEntry[]} Prioritized words for study
        */
-      getStudyQueue(words, limit = 20) {
+      getStudyQueue(words, limit = 50) {
         const dueWords = this.getDueWords(words);
         
-        // Sort by priority:
-        // 1. Lower mastery level (struggling words)
-        // 2. Never reviewed (new words)
-        // 3. Longer overdue
-        const prioritized = dueWords.sort((a, b) => {
-          // New words vs reviewed words
-          const aIsNew = !a.lastReviewed;
-          const bIsNew = !b.lastReviewed;
-          
-          if (aIsNew && !bIsNew) return 1;  // New words lower priority
-          if (!aIsNew && bIsNew) return -1;
-          
-          // Both reviewed: prioritize lower mastery
-          if (!aIsNew && !bIsNew) {
-            if (a.masteryLevel !== b.masteryLevel) {
-              return a.masteryLevel - b.masteryLevel;
-            }
-            // Same mastery: prioritize more overdue
-            return a.nextReview - b.nextReview;
+        // Separate new words and reviewed words
+        const newWords = dueWords.filter(w => !w.lastReviewed);
+        const reviewWords = dueWords.filter(w => w.lastReviewed);
+        
+        // Sort reviewed words by priority (lower mastery first, then more overdue)
+        reviewWords.sort((a, b) => {
+          if (a.masteryLevel !== b.masteryLevel) {
+            return a.masteryLevel - b.masteryLevel;
           }
-          
-          // Both new: random order
-          return Math.random() - 0.5;
+          return a.nextReview - b.nextReview;
         });
         
-        return prioritized.slice(0, limit);
+        // Shuffle new words for variety
+        for (let i = newWords.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [newWords[i], newWords[j]] = [newWords[j], newWords[i]];
+        }
+        
+        // Mix new words with review words (30% new, 70% review)
+        const result = [];
+        const newWordsLimit = Math.min(newWords.length, Math.ceil(limit * 0.3));
+        const reviewWordsLimit = Math.min(reviewWords.length, limit - newWordsLimit);
+        
+        // Add review words first (struggling words)
+        result.push(...reviewWords.slice(0, reviewWordsLimit));
+        
+        // Add new words
+        result.push(...newWords.slice(0, newWordsLimit));
+        
+        // If we haven't reached the limit, add more words
+        if (result.length < limit) {
+          const remaining = limit - result.length;
+          const moreReview = reviewWords.slice(reviewWordsLimit, reviewWordsLimit + remaining);
+          const moreNew = newWords.slice(newWordsLimit, newWordsLimit + remaining);
+          result.push(...moreReview, ...moreNew);
+        }
+        
+        return result.slice(0, limit);
       },
       
       /**
