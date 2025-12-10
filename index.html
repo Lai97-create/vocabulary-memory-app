@@ -12,6 +12,9 @@
   <!-- SheetJS library for Excel file parsing - 浣跨敤鍥藉唴CDN -->
   <script src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   
+  <!-- PDF.js library for PDF file parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  
   <style>
     /* ==================== CSS Variables ==================== */
     :root {
@@ -778,6 +781,8 @@
       constructor(data = {}) {
         this.id = data.id || Utils.generateUUID();
         this.word = data.word || '';
+        this.phonetic = data.phonetic || ''; // 闊虫爣
+        this.partOfSpeech = data.partOfSpeech || ''; // 璇嶆€?
         this.definition = data.definition || '';
         this.example = data.example || '';
         this.notes = data.notes || '';
@@ -864,6 +869,8 @@
         return {
           id: this.id,
           word: this.word,
+          phonetic: this.phonetic,
+          partOfSpeech: this.partOfSpeech,
           definition: this.definition,
           example: this.example,
           notes: this.notes,
@@ -1403,6 +1410,220 @@
           }
         }
         return -1;
+      }
+    };
+    
+    /**
+     * PDFImporter Module
+     * Handles PDF file import and intelligent parsing
+     */
+    const PDFImporter = {
+      /**
+       * Parse PDF file and extract vocabulary
+       * @param {File} file - PDF file
+       * @param {Function} onProgress - Progress callback
+       * @returns {Promise<Object>} Result with words array or error
+       */
+      async parsePDFFile(file, onProgress = null) {
+        return new Promise(async (resolve, reject) => {
+          try {
+            if (onProgress) onProgress(10, '璇诲彇PDF鏂囦欢...');
+            
+            const arrayBuffer = await file.arrayBuffer();
+            
+            if (onProgress) onProgress(30, '瑙ｆ瀽PDF鍐呭...');
+            
+            // Load PDF
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            let fullText = '';
+            
+            // Extract text from all pages
+            for (let i = 1; i <= pdf.numPages; i++) {
+              if (onProgress) onProgress(30 + (i / pdf.numPages) * 40, `瑙ｆ瀽绗?{i}椤?..`);
+              
+              const page = await pdf.getPage(i);
+              const textContent = await page.getTextContent();
+              const pageText = textContent.items.map(item => item.str).join(' ');
+              fullText += pageText + '\n';
+            }
+            
+            if (onProgress) onProgress(80, '鏅鸿兘璇嗗埆璇嶆眹...');
+            
+            // Parse vocabulary from text
+            const words = this.parseVocabularyFromText(fullText);
+            
+            if (onProgress) onProgress(100, '瀹屾垚锛?);
+            
+            resolve({
+              success: true,
+              words: words,
+              totalText: fullText.length
+            });
+            
+          } catch (error) {
+            reject(new Error(`PDF瑙ｆ瀽澶辫触: ${error.message}`));
+          }
+        });
+      },
+      
+      /**
+       * Parse vocabulary from extracted text using intelligent patterns
+       * @param {string} text - Extracted text from PDF
+       * @returns {WordEntry[]} Array of word entries
+       */
+      parseVocabularyFromText(text) {
+        const words = [];
+        const lines = text.split('\n').filter(line => line.trim().length > 0);
+        
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+          
+          // Skip very short lines or lines with too many numbers
+          if (line.length < 3 || (line.match(/\d/g) || []).length > line.length / 2) {
+            continue;
+          }
+          
+          // Try different vocabulary patterns
+          const patterns = [
+            // Pattern 1: word /phonetic/ pos. definition
+            /^([a-zA-Z]+(?:\s+[a-zA-Z]+)*)\s*\/([^\/]+)\/\s*([a-z]+\.?)\s+(.+)$/i,
+            
+            // Pattern 2: word [phonetic] pos. definition
+            /^([a-zA-Z]+(?:\s+[a-zA-Z]+)*)\s*\[([^\]]+)\]\s*([a-z]+\.?)\s+(.+)$/i,
+            
+            // Pattern 3: word (phonetic) pos. definition
+            /^([a-zA-Z]+(?:\s+[a-zA-Z]+)*)\s*\(([^)]+)\)\s*([a-z]+\.?)\s+(.+)$/i,
+            
+            // Pattern 4: word pos. definition (no phonetic)
+            /^([a-zA-Z]+(?:\s+[a-zA-Z]+)*)\s+([a-z]+\.)\s+(.+)$/i,
+            
+            // Pattern 5: word: definition (simple format)
+            /^([a-zA-Z]+(?:\s+[a-zA-Z]+)*)\s*[:锛歖\s*(.+)$/,
+            
+            // Pattern 6: word - definition
+            /^([a-zA-Z]+(?:\s+[a-zA-Z]+)*)\s*[-鈥撯€擼\s*(.+)$/,
+            
+            // Pattern 7: Multi-line format (word on one line, definition on next)
+            /^([a-zA-Z]+(?:\s+[a-zA-Z]+)*)$/
+          ];
+          
+          let matched = false;
+          
+          for (const pattern of patterns) {
+            const match = line.match(pattern);
+            
+            if (match) {
+              let wordData = {};
+              
+              if (pattern === patterns[0] || pattern === patterns[1] || pattern === patterns[2]) {
+                // Full format with phonetic and part of speech
+                wordData = {
+                  word: match[1].trim(),
+                  phonetic: match[2].trim(),
+                  partOfSpeech: match[3].trim(),
+                  definition: match[4].trim()
+                };
+              } else if (pattern === patterns[3]) {
+                // Format with part of speech but no phonetic
+                wordData = {
+                  word: match[1].trim(),
+                  partOfSpeech: match[2].trim(),
+                  definition: match[3].trim()
+                };
+              } else if (pattern === patterns[4] || pattern === patterns[5]) {
+                // Simple format
+                wordData = {
+                  word: match[1].trim(),
+                  definition: match[2].trim()
+                };
+              } else if (pattern === patterns[6]) {
+                // Multi-line format - check next line for definition
+                if (i + 1 < lines.length) {
+                  const nextLine = lines[i + 1].trim();
+                  if (nextLine && !nextLine.match(/^[a-zA-Z]+$/)) {
+                    wordData = {
+                      word: match[1].trim(),
+                      definition: nextLine
+                    };
+                    i++; // Skip next line as it's been processed
+                  }
+                }
+              }
+              
+              // Validate and create word entry
+              if (wordData.word && wordData.definition && 
+                  wordData.word.length > 1 && wordData.definition.length > 3) {
+                
+                // Clean up the data
+                wordData.word = this.cleanWord(wordData.word);
+                wordData.definition = this.cleanDefinition(wordData.definition);
+                
+                if (wordData.phonetic) {
+                  wordData.phonetic = this.cleanPhonetic(wordData.phonetic);
+                }
+                
+                if (wordData.partOfSpeech) {
+                  wordData.partOfSpeech = this.cleanPartOfSpeech(wordData.partOfSpeech);
+                }
+                
+                try {
+                  const word = new WordEntry(wordData);
+                  const validation = word.validate();
+                  
+                  if (validation.isValid) {
+                    words.push(word);
+                    matched = true;
+                    break;
+                  }
+                } catch (error) {
+                  // Skip invalid entries
+                }
+              }
+            }
+          }
+        }
+        
+        return words;
+      },
+      
+      /**
+       * Clean and normalize word
+       */
+      cleanWord(word) {
+        return word.replace(/[^\w\s-]/g, '').trim().toLowerCase();
+      },
+      
+      /**
+       * Clean and normalize definition
+       */
+      cleanDefinition(definition) {
+        return definition.replace(/^\d+\.?\s*/, '').trim();
+      },
+      
+      /**
+       * Clean and normalize phonetic transcription
+       */
+      cleanPhonetic(phonetic) {
+        return phonetic.replace(/[\/\[\]()]/g, '').trim();
+      },
+      
+      /**
+       * Clean and normalize part of speech
+       */
+      cleanPartOfSpeech(pos) {
+        const commonPos = {
+          'n.': 'noun', 'noun': 'noun',
+          'v.': 'verb', 'verb': 'verb',
+          'adj.': 'adjective', 'adjective': 'adjective',
+          'adv.': 'adverb', 'adverb': 'adverb',
+          'prep.': 'preposition', 'preposition': 'preposition',
+          'conj.': 'conjunction', 'conjunction': 'conjunction',
+          'pron.': 'pronoun', 'pronoun': 'pronoun',
+          'int.': 'interjection', 'interjection': 'interjection'
+        };
+        
+        const cleaned = pos.toLowerCase().trim();
+        return commonPos[cleaned] || cleaned;
       }
     };
     
@@ -2201,6 +2422,14 @@
                   <input type="file" id="excel-file-input" class="file-input" accept=".xlsx,.xls">
                 </div>
                 
+                <div class="action-card" id="import-pdf-card">
+                  <i class="fas fa-file-pdf action-icon" style="color: var(--danger-color);"></i>
+                  <h3 class="action-title">瀵煎叆PDF</h3>
+                  <p class="action-description">鏅鸿兘璇嗗埆PDF涓殑璇嶆眹<br>
+                  <small style="color: var(--text-light);">鑷姩鎻愬彇锛氬崟璇嶃€侀煶鏍囥€佽瘝鎬с€侀噴涔?/small></p>
+                  <input type="file" id="pdf-file-input" class="file-input" accept=".pdf">
+                </div>
+                
                 <div class="action-card" id="start-flashcard-card" ${totalWords === 0 ? 'style="opacity: 0.5; cursor: not-allowed;"' : ''}>
                   <i class="fas fa-layer-group action-icon" style="color: var(--info-color);"></i>
                   <h3 class="action-title">寮€濮嬮棯鍗?/h3>
@@ -2252,6 +2481,24 @@
             if (file) {
               await this.handleExcelImport(file);
               fileInput.value = ''; // Reset input
+            }
+          });
+        }
+        
+        // Import PDF
+        const importPdfCard = document.getElementById('import-pdf-card');
+        const pdfFileInput = document.getElementById('pdf-file-input');
+        
+        if (importPdfCard && pdfFileInput) {
+          importPdfCard.addEventListener('click', () => {
+            pdfFileInput.click();
+          });
+          
+          pdfFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+              await this.handlePDFImport(file);
+              pdfFileInput.value = ''; // Reset input
             }
           });
         }
@@ -2383,6 +2630,91 @@
       },
       
       /**
+       * Handle PDF file import
+       * @param {File} file - PDF file
+       */
+      async handlePDFImport(file) {
+        this.showLoading('姝ｅ湪瑙ｆ瀽PDF鏂囦欢...');
+        
+        try {
+          const result = await PDFImporter.parsePDFFile(file, (progress, message) => {
+            this.showLoading(message || `瑙ｆ瀽涓?.. ${progress}%`);
+          });
+          
+          if (result.success && result.words.length > 0) {
+            // Get existing words
+            const existingWords = DataManager.getWords();
+            const existingWordTexts = new Set(existingWords.map(w => w.word.toLowerCase()));
+            
+            // Filter out duplicates
+            const newWords = result.words.filter(word => 
+              !existingWordTexts.has(word.word.toLowerCase())
+            );
+            
+            const duplicateCount = result.words.length - newWords.length;
+            
+            // Add new words
+            const allWords = [...existingWords, ...newWords];
+            const saveResult = DataManager.saveWords(allWords);
+            
+            this.hideLoading();
+            
+            if (saveResult.success) {
+              const message = `鎴愬姛浠嶱DF璇嗗埆骞跺鍏?${newWords.length} 涓瘝姹?{duplicateCount > 0 ? `锛?{duplicateCount} 涓噸澶嶈瘝姹囧凡璺宠繃锛塦 : ''}`;
+              this.showToast(message, 'success', 4000);
+              
+              // Show preview of imported words
+              this.showPDFImportPreview(newWords.slice(0, 5));
+              
+              // Refresh home view
+              this.renderHomeView();
+            } else {
+              this.showToast(saveResult.error, 'error', 5000);
+            }
+          } else {
+            this.hideLoading();
+            this.showToast('PDF涓湭璇嗗埆鍒版湁鏁堢殑璇嶆眹鏍煎紡锛岃妫€鏌DF鍐呭鏍煎紡', 'warning', 5000);
+          }
+        } catch (error) {
+          this.hideLoading();
+          this.showToast(`PDF瑙ｆ瀽澶辫触: ${error.message}`, 'error', 5000);
+        }
+      },
+      
+      /**
+       * Show preview of imported PDF words
+       * @param {WordEntry[]} words - Sample words to preview
+       */
+      showPDFImportPreview(words) {
+        if (words.length === 0) return;
+        
+        const previewContent = `
+          <div style="margin-bottom: var(--spacing-md);">
+            <p style="color: var(--text-secondary);">浠ヤ笅鏄瘑鍒埌鐨勮瘝姹囩ず渚嬶細</p>
+          </div>
+          <div style="max-height: 300px; overflow-y: auto;">
+            ${words.map(word => `
+              <div style="padding: var(--spacing-sm); border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: var(--spacing-sm);">
+                <div style="font-weight: var(--font-weight-semibold); color: var(--primary-color);">
+                  ${word.word}
+                  ${word.phonetic ? `<span style="color: var(--text-secondary); font-weight: normal;"> /${word.phonetic}/</span>` : ''}
+                  ${word.partOfSpeech ? `<span style="color: var(--info-color); font-size: var(--font-size-sm); margin-left: var(--spacing-sm);">${word.partOfSpeech}</span>` : ''}
+                </div>
+                <div style="color: var(--text-secondary); margin-top: var(--spacing-xs);">${word.definition}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        
+        this.showModal({
+          title: 'PDF瀵煎叆棰勮',
+          content: previewContent,
+          confirmText: '纭畾',
+          showCancel: false
+        });
+      },
+      
+      /**
        * Render study view with spaced repetition
        */
       renderStudyView() {
@@ -2463,7 +2795,15 @@
                 
                 <div class="card-back" style="display: ${showingAnswer ? 'block' : 'none'};">
                   <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-sm);">鍗曡瘝</div>
-                  <h2 style="font-size: var(--font-size-2xl); color: var(--text-primary); margin-bottom: var(--spacing-lg);">${word.word}</h2>
+                  <h2 style="font-size: var(--font-size-2xl); color: var(--text-primary); margin-bottom: var(--spacing-sm);">${word.word}</h2>
+                  
+                  ${word.phonetic || word.partOfSpeech ? `
+                    <div style="margin-bottom: var(--spacing-lg); display: flex; gap: var(--spacing-md); justify-content: center; align-items: center; flex-wrap: wrap;">
+                      ${word.phonetic ? `<span style="color: var(--text-secondary); font-size: var(--font-size-lg);">/${word.phonetic}/</span>` : ''}
+                      ${word.partOfSpeech ? `<span style="background-color: var(--info-color); color: white; padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-full); font-size: var(--font-size-sm);">${word.partOfSpeech}</span>` : ''}
+                    </div>
+                  ` : ''}
+                  
                   <div style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-sm);">瀹氫箟</div>
                   <p style="font-size: var(--font-size-xl); color: var(--text-primary); margin-bottom: var(--spacing-xl);">${word.definition}</p>
                   ${word.example ? `
